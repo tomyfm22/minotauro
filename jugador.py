@@ -1,4 +1,5 @@
 import pygame
+import definiciones
 
 class Jugador(pygame.sprite.Sprite):
     def __init__(self,x,y):
@@ -10,6 +11,15 @@ class Jugador(pygame.sprite.Sprite):
         self.rect.y = y
         self.velocidad = 10
         self.direccion = pygame.math.Vector2(0,0)
+
+
+    def manejo_movimiento(self,dt,laberinto):
+        direccion_normal = pygame.math.Vector2(0,0)
+        if self.direccion.length() > 0:
+            direccion_normal = pygame.math.Vector2(self.direccion).normalize()
+            self.rect.x += direccion_normal.x * self.velocidad
+            self.rect.y += direccion_normal.y * self.velocidad
+
 
     def manejo_entrada(self,eventos):
         teclas = pygame.key.get_pressed()
@@ -23,16 +33,13 @@ class Jugador(pygame.sprite.Sprite):
         if teclas[pygame.K_DOWN]:
             self.direccion.y = 1
 
-        if self.direccion.length() > 0:
-            direccion_normal = pygame.math.Vector2(self.direccion).normalize()
-            self.rect.x += direccion_normal.x * self.velocidad
-            self.rect.y += direccion_normal.y * self.velocidad
+        
         
 
 
 
-    def update(self,dt):
-        pass
+    def update(self,dt,juego):
+        self.manejo_movimiento(dt,juego.laberinto)
     
     def draw(self,superficie):
         superficie.blit(self.imagen,self.rect)

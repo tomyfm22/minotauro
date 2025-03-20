@@ -18,7 +18,7 @@ class VentanaJuego(Ventana):
     def __init__(self):
         super().__init__()
 
-        self.jugador = Jugador(100,100)
+        self.jugador = Jugador(0,0)
         self.laberinto = Laberinto()
 
     def update(self, dt):
@@ -29,8 +29,8 @@ class VentanaJuego(Ventana):
                 pygame.quit()
                 exit()
         self.jugador.manejo_entrada(eventos)
-        self.jugador.update(dt)
+        self.jugador.update(dt,self)
 
     def draw(self,superficie):
-        self.jugador.draw(superficie)
         self.laberinto.draw(superficie)
+        self.jugador.draw(superficie)
