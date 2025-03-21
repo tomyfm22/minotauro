@@ -18,8 +18,8 @@ class VentanaJuego(Ventana):
     def __init__(self):
         super().__init__()
 
-        self.jugador = Jugador(0,0)
         self.laberinto = Laberinto()
+        self.jugador = Jugador(self.laberinto.punto_aparicion[0] * definiciones.TILE,self.laberinto.punto_aparicion[0] * definiciones.TILE)
 
     def update(self, dt):
         eventos = pygame.event.get()
@@ -33,4 +33,5 @@ class VentanaJuego(Ventana):
 
     def draw(self,superficie):
         self.laberinto.draw(superficie)
+        # self.laberinto.rb_visual(superficie)
         self.jugador.draw(superficie)

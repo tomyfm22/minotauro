@@ -9,7 +9,7 @@ class Jugador(pygame.sprite.Sprite):
         self.rect = self.imagen.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.velocidad = 10
+        self.velocidad = 2
         self.direccion = pygame.math.Vector2(0,0)
 
 
@@ -17,9 +17,11 @@ class Jugador(pygame.sprite.Sprite):
         direccion_normal = pygame.math.Vector2(0,0)
         if self.direccion.length() > 0:
             direccion_normal = pygame.math.Vector2(self.direccion).normalize()
-            self.rect.x += direccion_normal.x * self.velocidad
-            self.rect.y += direccion_normal.y * self.velocidad
-
+        nueva_pos = (self.rect.x+ (direccion_normal.x * self.velocidad),self.rect.y + (direccion_normal.y * self.velocidad))
+        if (nueva_pos[0] // definiciones.TILE,nueva_pos[1] // definiciones.TILE) in laberinto.muros:
+            return
+        self.rect.x = nueva_pos[0]
+        self.rect.y = nueva_pos[1]
 
     def manejo_entrada(self,eventos):
         teclas = pygame.key.get_pressed()
