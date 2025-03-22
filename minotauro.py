@@ -16,7 +16,7 @@ class Minotauro(pygame.sprite.Sprite):
         self.camino = []
         self.muros_cercano = []
     
-    def obtener_muros_cercanos(self,laberinto):
+    def obtener_muros_cercanos(self,colicionables):
         
         self.muros_cercano = []
         pos = (self.rect.x//TILE,self.rect.y//TILE)
@@ -25,8 +25,8 @@ class Minotauro(pygame.sprite.Sprite):
         
         for direccion in direcciones:
             muro_vecino = (pos[0] + direccion[0],pos[1] + direccion[1])
-            if muro_vecino in laberinto.muros:
-                self.muros_cercano.append(laberinto.muros[muro_vecino])
+            if muro_vecino in colicionables:
+                self.muros_cercano.append(colicionables[muro_vecino])
          
 
     
@@ -110,7 +110,7 @@ class Minotauro(pygame.sprite.Sprite):
         if self.delay_generar_camino < 0:
             self.camino = self.generar_camino(juego.grafo,juego.obtener_posicion_jugador_grilla())
             self.delay_generar_camino = self.delay_generar_camino_max
-        self.obtener_muros_cercanos(juego.laberinto)
+        self.obtener_muros_cercanos(juego.laberinto.obtener_elementos_colicionables())
         self.seguir_jugador()
 
 
