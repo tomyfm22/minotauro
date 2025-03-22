@@ -24,9 +24,10 @@ class Main:
         while True:
             self.update(min(1,dt/1000))
             self.draw()
+
             pygame.display.flip()
             dt = self.clock.tick(definiciones.FPS)
-
+            # pygame.display.set_caption(str(1 / dt * 1000))
 
 
 main = Main()

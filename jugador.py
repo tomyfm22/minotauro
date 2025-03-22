@@ -1,5 +1,5 @@
 import pygame
-import definiciones
+from  definiciones import TILE
 
 class Jugador(pygame.sprite.Sprite):
     def __init__(self,x,y):
@@ -9,19 +9,53 @@ class Jugador(pygame.sprite.Sprite):
         self.rect = self.imagen.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.velocidad = 2
+        self.velocidad = 10
         self.direccion = pygame.math.Vector2(0,0)
+        self.muros_cercano = []
 
+    def obtener_muros_cercanos(self,laberinto):
+        
+        self.muros_cercano = []
+        pos = (self.rect.x//TILE,self.rect.y//TILE)
+        direcciones = [(1,0),(-1,0),(1,1),(-1,1),(-1,-1),(0,1),(0,-1),(1,-1)]
+        
+        
+        for direccion in direcciones:
+            muro_vecino = (pos[0] + direccion[0],pos[1] + direccion[1])
+            if muro_vecino in laberinto.muros:
+                self.muros_cercano.append(laberinto.muros[muro_vecino])
 
     def manejo_movimiento(self,dt,laberinto):
         direccion_normal = pygame.math.Vector2(0,0)
         if self.direccion.length() > 0:
             direccion_normal = pygame.math.Vector2(self.direccion).normalize()
-        nueva_pos = (self.rect.x+ (direccion_normal.x * self.velocidad),self.rect.y + (direccion_normal.y * self.velocidad))
-        if (nueva_pos[0] // definiciones.TILE,nueva_pos[1] // definiciones.TILE) in laberinto.muros:
-            return
-        self.rect.x = nueva_pos[0]
-        self.rect.y = nueva_pos[1]
+
+        self.obtener_muros_cercanos(laberinto)
+        
+        tamanio = 50
+        self.rect.x += self.velocidad * direccion_normal.x
+        rect = pygame.Rect(self.rect.x,self.rect.y,tamanio,tamanio)
+        for i in self.muros_cercano:
+            if rect.colliderect(i.rect):
+                if self.direccion.x > 0:
+                    rect.right = i.rect.left
+                if self.direccion.x < 0:
+                    rect.left = i.rect.right
+                
+                self.rect.x = rect.x
+        
+        self.rect.y += self.velocidad * direccion_normal.y
+        rect = pygame.Rect(self.rect.x,self.rect.y,tamanio,tamanio)
+        for i in self.muros_cercano:
+            if rect.colliderect(i.rect):
+                if self.direccion.y > 0:
+                    rect.bottom = i.rect.top
+                if self.direccion.y < 0:
+                    rect.top = i.rect.bottom
+                
+                self.rect.y = rect.y
+
+
 
     def manejo_entrada(self,eventos):
         teclas = pygame.key.get_pressed()
@@ -43,5 +77,6 @@ class Jugador(pygame.sprite.Sprite):
     def update(self,dt,juego):
         self.manejo_movimiento(dt,juego.laberinto)
     
-    def draw(self,superficie):
-        superficie.blit(self.imagen,self.rect)
+    def draw(self,superficie,offset:tuple[int,int]):
+        superficie.blit(self.imagen,(self.rect.x - offset[0],self.rect.y - offset[1]))
+
