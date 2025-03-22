@@ -25,6 +25,7 @@ class VentanaJuego(Ventana):
         self.camara = Camara(0,0,self.jugador)
         self.elementos_en_pantalla = []
         self.grafo = self.laberinto.generar_grafo()
+        self.s = "llll"
     
     def obtener_elementos_pantalla(self,offset):
         # Obtengo los tiles que se encuentran mostrando en la patalla.
