@@ -26,35 +26,28 @@ class Jugador(pygame.sprite.Sprite):
             if muro_vecino in colicionables:
                 self.muros_cercano.append(colicionables[muro_vecino])
 
-    def manejo_movimiento(self,dt,laberinto):
+    def manejo_movimiento(self,dt,bloques):
         direccion_normal = pygame.math.Vector2(0,0)
         if self.direccion.length() > 0:
             direccion_normal = pygame.math.Vector2(self.direccion).normalize()
 
-        self.obtener_muros_cercanos(laberinto.obtener_elementos_colicionables())
-        
+        self.muros_cercano = []
+        self.muros_cercano = bloques
         tamanio = 50
         self.rect.x += self.velocidad * direccion_normal.x
         rect = pygame.Rect(self.rect.x,self.rect.y,tamanio,tamanio)
         for i in self.muros_cercano:
-            if rect.colliderect(i.rect):
-                if self.direccion.x > 0:
-                    rect.right = i.rect.left
-                if self.direccion.x < 0:
-                    rect.left = i.rect.right
-                
-                self.rect.x = rect.x
+            if "colicion" in i[0].__dict__:
+                self.rect.x = i[0].colicion.chequear_colicion_x(rect,self.direccion)
+
         
         self.rect.y += self.velocidad * direccion_normal.y
         rect = pygame.Rect(self.rect.x,self.rect.y,tamanio,tamanio)
         for i in self.muros_cercano:
-            if rect.colliderect(i.rect):
-                if self.direccion.y > 0:
-                    rect.bottom = i.rect.top
-                if self.direccion.y < 0:
-                    rect.top = i.rect.bottom
-                
-                self.rect.y = rect.y
+
+            if "colicion" in i[0].__dict__:
+                self.rect.y = i[0].colicion.chequear_colicion_y(rect,self.direccion)
+
 
 
 
@@ -76,9 +69,9 @@ class Jugador(pygame.sprite.Sprite):
 
 
     def update(self,dt,juego):
-        self.manejo_movimiento(dt,juego.laberinto)
+        self.manejo_movimiento(dt,juego.quad_tree.consulta(pygame.Rect(self.rect.x - TILE * 2,self.rect.y - TILE * 2,self.rect.width + TILE * 4,self.rect.height + TILE * 4)))
     
     def draw(self,superficie,offset:tuple[int,int]):
         superficie.blit(self.imagen,(self.rect.x - offset[0],self.rect.y - offset[1]))
         for i in self.muros_cercano:
-            pygame.draw.rect(superficie,"white",(i.rect.x - offset[0],i.rect.y - offset[1],i.rect.width,i.rect.width))
+            pygame.draw.rect(superficie,"white",(i[0].rect.x - offset[0],i[0].rect.y - offset[1],i[0].rect.width,i[0].rect.width))

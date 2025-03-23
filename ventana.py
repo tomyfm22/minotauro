@@ -4,6 +4,9 @@ from jugador import Jugador
 from laberinto import Laberinto
 from camara import Camara
 from minotauro import Minotauro
+from quad_tree import Quadtree
+
+
 class Ventana:
     def __init__(self):
         pass
@@ -19,22 +22,30 @@ class VentanaJuego(Ventana):
     def __init__(self):
         super().__init__()
         
-        self.laberinto = Laberinto()
-        self.jugador = Jugador(self.laberinto.punto_aparicion[0] * TILE,self.laberinto.punto_aparicion[0] * TILE)
-        self.minotauro = Minotauro(self.laberinto.punto_aparicion[0] * TILE,self.laberinto.punto_aparicion[0] * TILE)
-        self.camara = Camara(0,0,self.jugador)
+        self.laberinto  = Laberinto()
+        self.quad_tree  = Quadtree(0,pygame.Rect(0,0,self.laberinto.tamanio_nivel[0],self.laberinto.tamanio_nivel[1]))
+        self.jugador    = Jugador(self.laberinto.punto_aparicion[0] * TILE,self.laberinto.punto_aparicion[0] * TILE)
+        # self.minotauro  = Minotauro(self.laberinto.punto_aparicion[0] * TILE,self.laberinto.punto_aparicion[0] * TILE)
+        self.camara     = Camara(0,0,self.jugador)
         self.elementos_en_pantalla = []
-        self.grafo = self.laberinto.generar_grafo()
-        self.s = "llll"
-    
-    def obtener_elementos_pantalla(self,offset):
+        self.grafo      = self.laberinto.generar_grafo()
+
+        for tipo in self.laberinto.objetos:
+            for elemento in self.laberinto.objetos[tipo]:
+                self.quad_tree.insertar(elemento,tipo)
+
+        self.cantidad_llaves = len(self.laberinto.objetos["llaves"])
+
+
+
+        
+
+    def obtener_elementos_pantalla(self):
+        offset = self.camara.obtener_offset()
+        self.elementos_en_pantalla = []
+
         # Obtengo los tiles que se encuentran mostrando en la patalla.
-        self.elementos_en_pantalla = []
-        for i in range(offset[0] //TILE,(offset[0] + ANCHO) // TILE + 1):
-            for j in range(offset[1] // TILE,(offset[1] + ALTO) // TILE + 1):
-                for elemento in self.laberinto.elementos_del_laberinto:
-                    if (i,j) in self.laberinto.elementos_del_laberinto[elemento]:
-                        self.elementos_en_pantalla.append(self.laberinto.elementos_del_laberinto[elemento][(i,j)])
+        self.elementos_en_pantalla =  self.quad_tree.consulta(pygame.Rect(offset[0]-TILE,offset[1]-TILE,ANCHO + 2 * TILE,ALTO + 2 * TILE))
                         
     def obtener_posicion_jugador_grilla(self):
         return (self.jugador.rect.x // TILE,self.jugador.rect.y // TILE)
@@ -47,16 +58,15 @@ class VentanaJuego(Ventana):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-        for tipo in self.laberinto.elementos_del_laberinto:
-            if tipo == "muro":
-                continue
+        self.obtener_elementos_pantalla()
+        
+        for i in self.elementos_en_pantalla:
+            i[0].update(dt,self)
 
-            for elemento in self.laberinto.elementos_del_laberinto[tipo].copy().values():
-                elemento.update(dt,self)
 
         self.jugador.manejo_entrada(eventos)
         self.jugador.update(dt,self)
-        self.minotauro.update(dt,self)
+        # self.minotauro.update(dt,self)
         self.camara.update(dt)
 
 
@@ -77,13 +87,12 @@ class VentanaJuego(Ventana):
     def draw(self,superficie):
         offset = self.camara.obtener_offset()
 
-        self.obtener_elementos_pantalla(offset)
 
         for i in self.elementos_en_pantalla:
-            i.draw(superficie,offset)
+            i[0].draw(superficie,offset)
         
         # self.laberinto.rb_visual(superficie)
-        self.minotauro.draw(superficie,offset)
+        # self.minotauro.draw(superficie,offset)
         self.jugador.draw(superficie,offset)
         
         # Generar la máscara de visión
@@ -96,3 +105,5 @@ class VentanaJuego(Ventana):
                 # pygame.draw.line(superficie,"blue",(i[0] * TILE + TILE // 2 - offset[0],i[1] * TILE + TILE // 2 - offset[1]),(j[0] * TILE + TILE // 2 - offset[0],j[1] * TILE + TILE // 2 - offset[1]))
         centro = (self.laberinto.tamanio_mapa // 2 * TILE,self.laberinto.tamanio_mapa // 2 * TILE)
         pygame.draw.rect(superficie,"blue",(centro[0] - offset[0],centro[1] - offset[1],TILE,TILE))
+
+        # self.quad_tree.draw(superficie,offset)

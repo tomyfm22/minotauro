@@ -1,45 +1,46 @@
 import pygame,random,time
 import definiciones
-from items import *
-
-
-class Muro(pygame.sprite.Sprite):
-    def __init__(self,x,y):
-        super().__init__()
-        self.x = x # coordenadas en grilla.
-        self.y = y # coordenadas en grilla.
-        self.rect = pygame.Rect(x * definiciones.TILE,y *definiciones.TILE,definiciones.TILE,definiciones.TILE) # coordenadas en el mundo.
-
-    def update(self, dt,juego):
-        pass
-
-    def draw(self,superficie,offset:tuple[int,int]):
-        pygame.draw.rect(superficie,"green",((self.rect.x) - offset[0],(self.rect.y) - offset[1],definiciones.TILE,definiciones.TILE))
+from bloque import *
 
 class Laberinto:
     MURO    = 0
     ITEMS   = 1
 
     def __init__(self):
-        self.tamanio_mapa = 101
+        self.tamanio_mapa = 20
         # self.muros  = {} # pos:Muro
         self.punto_aparicion = (1,1)
 
         self.elementos_del_laberinto = {
-            "muro" : {},
-            "llaves" : {},
-            "puerta" : {},
+            "muro" : set(),
+            "llaves" : set(),
+            "puerta" : set(),
 
         }
+
+        self.objetos = {
+            "muro" : pygame.sprite.Group(),
+            "llaves" : pygame.sprite.Group(),
+            "puerta" : pygame.sprite.Group(),
+        }
+
 
         for i in range(self.tamanio_mapa):
             for j in range(self.tamanio_mapa):
                 # self.muros[(i,j)] = Muro(i,j)
-                self.elementos_del_laberinto["muro"][(i,j)] = Muro(i,j)
-        self.rb()
+                self.elementos_del_laberinto["muro"].add((i,j))
+                
 
+
+        self.tamanio_nivel = (self.tamanio_mapa * TILE,self.tamanio_mapa * TILE)
+        
+        self.rb()
         self.borrar_paredes()
+
         self.instanciar_items()
+
+        for i in self.elementos_del_laberinto["muro"]:
+            self.objetos["muro"].add(Muro(i[0],i[1]))
 
     def obtener_elementos_colicionables(self) -> dict:
         return self.elementos_del_laberinto["muro"] | self.elementos_del_laberinto["puerta"]
@@ -53,21 +54,15 @@ class Laberinto:
             intermedio = (pos[0] + dire[0], pos[1] + dire[1])
 
             if intermedio in self.elementos_del_laberinto["muro"] :
-                self.elementos_del_laberinto["muro"] .pop(intermedio)
+                self.elementos_del_laberinto["muro"].discard(intermedio)
         
-        #borro las 4 paredes del centro.
         centro = (self.tamanio_mapa // 2 ,self.tamanio_mapa // 2)
         # Si el centro tiene pared, se la quito.
         if centro in self.elementos_del_laberinto["muro"] :
-            self.elementos_del_laberinto["muro"] .pop(centro)
+            self.elementos_del_laberinto["muro"].discard(centro)
 
-        for i in direcciones:
-            posible_muro = (centro[0] + i[0],centro[1] + i[1])
-            if posible_muro in self.elementos_del_laberinto["muro"] :
-                self.elementos_del_laberinto["muro"] .pop(posible_muro)
 
-    def eliminar_elemento(self,tipo:str,clave:tuple[int,int]):
-        del self.elementos_del_laberinto[tipo][clave]
+
 
     def rb(self):
         dist = 2
@@ -82,7 +77,7 @@ class Laberinto:
         pila    = []
         while no_visitados:
             nodo = actual
-            self.elementos_del_laberinto["muro"].pop(nodo,None)
+            self.elementos_del_laberinto["muro"].discard(nodo)
             no_visitados.discard(nodo)
 
             nodos_vecinos = [(actual[0] + dx,actual[1] + dy) for dx,dy in direcciones 
@@ -96,7 +91,7 @@ class Laberinto:
 
                 # Tile intermedio
                 intermedio = (actual[0] + dire[0], actual[1] + dire[1])
-                self.elementos_del_laberinto["muro"] .pop(intermedio,None)
+                self.elementos_del_laberinto["muro"].discard(intermedio)
                 pila.append(actual)
                 actual = nuevo
             else:
@@ -183,16 +178,16 @@ class Laberinto:
             if not tiene_espacio:
                 if not pos_vecina in self.elementos_del_laberinto["muro"]:
                     tiene_espacio = True
-                    self.elementos_del_laberinto["puerta"][pos_vecina] = Puerta(pos_vecina[0],pos_vecina[1])
+                    self.objetos["puerta"].add(Puerta(pos_vecina[0],pos_vecina[1]))
             else:
                 if not pos_vecina in self.elementos_del_laberinto["muro"]:
-                    self.elementos_del_laberinto["muro"][pos_vecina] = Muro(pos_vecina[0],pos_vecina[1])
+                    self.elementos_del_laberinto["muro"].add(pos_vecina)
 
         if not tiene_espacio:
             direccion_random = random.choice(direccion)
             posicion = (centro[0] + direccion_random[0],centro[1] + direccion_random[1])
-            self.elementos_del_laberinto["muro"].pop(posicion)
-            self.elementos_del_laberinto["puerta"][posicion] = Puerta(posicion[0],posicion[1])
+            self.elementos_del_laberinto["muro"].discard(posicion)
+            self.objetos["puerta"].add(Puerta(pos_vecina[0],pos_vecina[1]))
 
         # Intancio las llaves en distintos puntos del mapa.
         posiciones_libres = [(i,j) for j in range(self.tamanio_mapa) for i in range(self.tamanio_mapa) if (i,j) not in self.elementos_del_laberinto["muro"]]
@@ -201,7 +196,7 @@ class Laberinto:
         while cantidad_llaves > 0:
             pos = posiciones_libres.pop(0)
             if abs(pos[0] - centro[0]) + abs(pos[1] - centro[1]) > self.tamanio_mapa // 4:
-                self.elementos_del_laberinto["llaves"][pos] = LLave(pos[0],pos[1])
+                self.objetos["llaves"].add(LLave(pos[0],pos[1]))
                 cantidad_llaves -= 1
 
 
