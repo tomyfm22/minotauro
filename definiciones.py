@@ -3,3 +3,23 @@ ALTO  = 720
 FPS   = 60
 
 TILE = 128
+
+
+
+# Estados de la transicion
+TERMINO = 0
+FADEIN = 1
+FADEOUT = 2
+ESPERANDO = 3
+
+
+# IDs bloques.
+LIMITE = 0
+MURO   = 1
+LLAVE  = 2
+PUERTA = 3
+SALIDA = 4
+SUELO = 5
+MARTILLO = 6
+BOTIQUIN = 7
+BOMBAATURDIDORA = 8

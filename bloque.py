@@ -1,5 +1,5 @@
 import pygame
-from definiciones import TILE
+from definiciones import TILE,FPS
 import math
 from colicionable import Colicionable
 from interactuable import *
@@ -20,42 +20,36 @@ class Bloque(pygame.sprite.Sprite):
 
 
 class Muro(Bloque):
-    def __init__(self, x, y):
-        imagen = pygame.Surface((TILE,TILE))
-        imagen.fill("green")
+    def __init__(self, x, y,imagen):
         super().__init__(x, y, imagen)
         self.colicion = Colicionable(self.rect)
 
-
-
+# class Limite(Bloque):
+#     def __init__(self, x, y):
+#         imagen = pygame.Surface((TILE,TILE))
+#         imagen.fill("violet")
+#         super().__init__(x, y, imagen)
+#         self.colicion = Colicionable(self.rect)
 
 
 class LLave(Bloque):
     def __init__(self, x, y):
-        surf = pygame.Surface((50,50))
-        surf.fill("yellow")
-        super().__init__(x, y, surf)
+        # surf = pygame.Surface((50,50))
+        # surf.fill("yellow")
+        super().__init__(x, y, pygame.image.load("sprites/llave.png").convert_alpha())
+        self.rect.center = (x * TILE + TILE // 2,y * TILE + TILE // 2)
         self.interactuable = AgarrarLLave(self)
-    
+        self.tiempo = 0
+        self.posicion_inicial = self.rect.y
+
     def update(self, dt, juego):
-        # self.colicion_con_jugador(juego)
         self.interactuable.interactuar(juego)
-        self.rect.y += 2 * math.sin(dt * 4)
-
-
-    def colicion_con_jugador(self, juego):
-        jugador = juego.jugador
-        if self.rect.colliderect(jugador.rect):
-            jugador.llaves += 1
-            juego.laberinto.eliminar_elemento("llaves",(self.rect.x//TILE,self.rect.y//TILE))
-            # self.kill()
-            # del self
+        self.tiempo += dt
+        self.rect.y = 10 * math.sin(self.tiempo * 4) + self.posicion_inicial
     
 class Puerta(Bloque):
     def __init__(self, x, y):
-        surf = pygame.Surface((TILE,TILE))
-        surf.fill("orange")
-        super().__init__(x, y, surf)
+        super().__init__(x, y, pygame.image.load("sprites/puerta.png").convert_alpha())
 
         self.colicion = Colicionable(self.rect)
         self.esta_abierta = False
@@ -66,3 +60,34 @@ class Puerta(Bloque):
         if self.esta_abierta:
             # juego.gano_juego = True
             print("GANO")
+
+
+class Salida(Bloque):
+    def __init__(self, x, y):
+        super().__init__(x, y, pygame.image.load("sprites/salida.png").convert_alpha())
+        self.ganarJuego = GanarJuego(self)
+    
+    def update(self, dt, juego):
+        self.ganarJuego.interactuar(juego)
+
+
+class ItemRompeMuro(Bloque):
+    def __init__(self, x, y):
+        super().__init__(x, y, pygame.image.load("sprites/rompe_muros.png").convert_alpha())
+        self.agarrar_item = AgarrarMartillo(self)
+    def update(self, dt, juego):
+        self.agarrar_item.interactuar(juego)
+
+class ItemBotiquin(Bloque):
+    def __init__(self, x, y):
+        super().__init__(x, y, pygame.image.load("sprites/botiquin.png").convert_alpha())
+        self.agarrar_item = AgarrarBotiquin(self)
+    def update(self, dt, juego):
+        self.agarrar_item.interactuar(juego)
+
+class ItemAturdirMinotauro(Bloque):
+    def __init__(self, x, y):
+        super().__init__(x, y,pygame.image.load("sprites/bomba_aturdidora.png").convert_alpha())
+        self.agarrar_item = AgarrarBombaAturdidora(self)
+    def update(self, dt, juego):
+        self.agarrar_item.interactuar(juego)

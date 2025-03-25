@@ -1,30 +1,36 @@
 import pygame
 from  definiciones import TILE
+from herramientas import *
 
 class Jugador(pygame.sprite.Sprite):
     def __init__(self,x,y):
         super().__init__()
-        self.imagen = pygame.Surface((50,50))
-        self.imagen.fill("red")
+
+
+
+        self.imagen = pygame.image.load("sprites/jugador.png").convert_alpha()
         self.rect = self.imagen.get_rect()
         self.rect.x = x
         self.rect.y = y
+
         self.velocidad = 20
         self.direccion = pygame.math.Vector2(0,0)
         self.muros_cercano = []
-        self.llaves = 0
+        self.vida  = 3
+        self.inmune = False 
+        self.delay_inmune = 2 # segundos
+        self.direccion_mirando = pygame.math.Vector2(0,0)
 
-    def obtener_muros_cercanos(self,colicionables):
+        self.inventario = []
+        self.herramienta_actual = 0
+
+    def recibir_danio(self):
+        if self.inmune:
+            return
         
-        self.muros_cercano = []
-        pos = (self.rect.x//TILE,self.rect.y//TILE)
-        direcciones = [(1,0),(-1,0),(1,1),(-1,1),(-1,-1),(0,1),(0,-1),(1,-1)]
-        
-        
-        for direccion in direcciones:
-            muro_vecino = (pos[0] + direccion[0],pos[1] + direccion[1])
-            if muro_vecino in colicionables:
-                self.muros_cercano.append(colicionables[muro_vecino])
+        self.vida -= 1
+        self.delay_inmune = 2
+        self.inmune = True
 
     def manejo_movimiento(self,dt,bloques):
         direccion_normal = pygame.math.Vector2(0,0)
@@ -33,16 +39,16 @@ class Jugador(pygame.sprite.Sprite):
 
         self.muros_cercano = []
         self.muros_cercano = bloques
-        tamanio = 50
         self.rect.x += self.velocidad * direccion_normal.x
-        rect = pygame.Rect(self.rect.x,self.rect.y,tamanio,tamanio)
+        rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
+        
         for i in self.muros_cercano:
             if "colicion" in i[0].__dict__:
                 self.rect.x = i[0].colicion.chequear_colicion_x(rect,self.direccion)
 
         
         self.rect.y += self.velocidad * direccion_normal.y
-        rect = pygame.Rect(self.rect.x,self.rect.y,tamanio,tamanio)
+        rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
         for i in self.muros_cercano:
 
             if "colicion" in i[0].__dict__:
@@ -56,22 +62,58 @@ class Jugador(pygame.sprite.Sprite):
         self.direccion = pygame.math.Vector2(0,0)
         if teclas[pygame.K_LEFT]:
             self.direccion.x = -1
+            self.direccion_mirando.x = -1
+            self.direccion_mirando.y = 0
         if teclas[pygame.K_RIGHT]:
             self.direccion.x = 1
+            self.direccion_mirando.x = 1
+            self.direccion_mirando.y = 0
         if teclas[pygame.K_UP]:
             self.direccion.y = -1
+            self.direccion_mirando.y = -1
+            self.direccion_mirando.x = 0
         if teclas[pygame.K_DOWN]:
             self.direccion.y = 1
-
-        
+            self.direccion_mirando.y = 1
+            self.direccion_mirando.x = 0
+       
+        # teclas = pygame.key.get_just_pressed()
+        # if teclas[pygame.K_SPACE]:
+            # self.inventario[0].usar()
         
 
 
 
     def update(self,dt,juego):
         self.manejo_movimiento(dt,juego.quad_tree.consulta(pygame.Rect(self.rect.x - TILE * 2,self.rect.y - TILE * 2,self.rect.width + TILE * 4,self.rect.height + TILE * 4)))
-    
+        
+        juego.texto_vida.set_text( "Vida: " + str(self.vida))
+        if self.inmune:
+            self.delay_inmune -= dt
+            if self.delay_inmune < 0:
+                self.inmune = False
+
+        teclas = pygame.key.get_just_pressed()
+        if len(self.inventario) > 0 and teclas[pygame.K_SPACE]:
+            self.inventario[self.herramienta_actual].usar(juego)
+            if self.inventario[self.herramienta_actual].usos <= 0:
+                self.inventario.pop(self.herramienta_actual)
+                self.herramienta_actual = 0
+
+
+        if teclas[pygame.K_z]:
+            self.herramienta_actual -= 1
+            if self.herramienta_actual < 0:
+                self.herramienta_actual = len(self.inventario)-1
+            
+
+        if teclas[pygame.K_x]:
+            self.herramienta_actual += 1
+            if self.herramienta_actual == len(self.inventario):
+                self.herramienta_actual = 0
+            
+
     def draw(self,superficie,offset:tuple[int,int]):
         superficie.blit(self.imagen,(self.rect.x - offset[0],self.rect.y - offset[1]))
-        for i in self.muros_cercano:
-            pygame.draw.rect(superficie,"white",(i[0].rect.x - offset[0],i[0].rect.y - offset[1],i[0].rect.width,i[0].rect.width))
+        # for i in self.muros_cercano:
+            # pygame.draw.rect(superficie,"white",(i[0].rect.x - offset[0],i[0].rect.y - offset[1],i[0].rect.width,i[0].rect.width))
