@@ -4,30 +4,24 @@ from definiciones import TILE
 class Minotauro(pygame.sprite.Sprite):
     def __init__(self,x,y):
         super().__init__()
-        self.imagen = pygame.Surface((50,50))
-        self.imagen.fill("brown")
+        self.imagen = pygame.image.load("sprites/minotauro.png").convert_alpha()
         self.rect = self.imagen.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.velocidad = 9
 
-        self.delay_generar_camino_max = 0.5
+        self.delay_generar_camino_max = 0.2
         self.delay_generar_camino = 0
         self.camino = []
         self.muros_cercano = []
+        self.aturdido = False
+        self.delay_aturdido = 5 # segundos
+
+    def aturdir(self):
+        self.aturdido = True
+        self.delay_aturdido = 5
     
-    def obtener_muros_cercanos(self,colicionables):
-        
-        self.muros_cercano = []
-        pos = (self.rect.x//TILE,self.rect.y//TILE)
-        direcciones = [(1,0),(-1,0),(1,1),(-1,1),(-1,-1),(0,1),(0,-1),(1,-1)]
-        
-        
-        for direccion in direcciones:
-            muro_vecino = (pos[0] + direccion[0],pos[1] + direccion[1])
-            if muro_vecino in colicionables:
-                self.muros_cercano.append(colicionables[muro_vecino])
-         
+     
 
     
     def generar_camino(self,grafo,pos_jugador):
@@ -62,9 +56,41 @@ class Minotauro(pygame.sprite.Sprite):
         camino.pop(0) # descarto la posicion en la que ya estoy.
         return camino
 
-    def seguir_jugador(self):
+    def seguir_jugador(self,juego):
+        tamanio = 50
+        jugador = juego.jugador
+        # Si me encuentro en el mismo tile que el jugador, los sigo 
+        pos_jugador_grilla = (jugador.rect.centerx // TILE,jugador.rect.centery // TILE)
+        if pos_jugador_grilla == (self.rect.centerx // TILE,self.rect.centery // TILE):
+
+            direccion = pygame.math.Vector2(jugador.rect.centerx - self.rect.centerx ,jugador.rect.centery - self.rect.centery)
+            if direccion.length() > 20:
+                direccion = direccion.normalize()
+
+                self.rect.x += self.velocidad * direccion.x
+                rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
+                for i in self.muros_cercano:
+                    if "colicion" in i[0].__dict__:
+                        self.rect.x = i[0].colicion.chequear_colicion_x(rect,direccion)
+
+
+                self.rect.y += self.velocidad * direccion.y
+                rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
+                for i in self.muros_cercano:
+                    if "colicion" in i[0].__dict__:
+                        self.rect.y = i[0].colicion.chequear_colicion_y(rect,direccion)
+                return
+            else:
+                # Si esta cerca del jugador, este recibe danio.
+                jugador.recibir_danio()
+                juego.camara.sacudir_camara(10,1)
+
+        
+
         if not self.camino:
             return
+
+
 
         nodo = self.camino[0]
         nodo = (nodo[0] * TILE + TILE // 2, nodo[1] * TILE + TILE // 2)
@@ -79,39 +105,40 @@ class Minotauro(pygame.sprite.Sprite):
 
             direccion = direccion.normalize()
 
-            tamanio = 50
             self.rect.x += direccion.x * self.velocidad
-            rect = pygame.Rect(self.rect.x,self.rect.y,tamanio,tamanio)
+            rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
             for i in self.muros_cercano:
-                if rect.colliderect(i.rect):
-                    if direccion.x > 0:
-                        rect.right = i.rect.left
-                    if direccion.x < 0:
-                        rect.left = i.rect.right
-                    
-                    self.rect.x = rect.x
-
+                if "colicion" in i[0].__dict__:
+                    self.rect.x = i[0].colicion.chequear_colicion_x(rect,direccion)
 
 
             self.rect.y += direccion.y * self.velocidad
-            rect = pygame.Rect(self.rect.x,self.rect.y,tamanio,tamanio)
+            rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
             for i in self.muros_cercano:
-                if rect.colliderect(i.rect):
-                    if direccion.y > 0:
-                        rect.bottom = i.rect.top
-                    if direccion.y < 0:
-                        rect.top = i.rect.bottom
-                    
-                    self.rect.y = rect.y
+                if "colicion" in i[0].__dict__:
+                    self.rect.y = i[0].colicion.chequear_colicion_y(rect,direccion)
+
             
 
     def update(self,dt,juego):
+        if self.aturdido:
+            self.delay_aturdido -= dt
+            if self.delay_aturdido < 0:
+                self.aturdido = False
+            return
+
+        
         self.delay_generar_camino -= dt
         if self.delay_generar_camino < 0:
-            self.camino = self.generar_camino(juego.grafo,juego.obtener_posicion_jugador_grilla())
+            self.camino = self.generar_camino(juego.laberinto.grafo,juego.obtener_posicion_jugador_grilla())
             self.delay_generar_camino = self.delay_generar_camino_max
-        self.obtener_muros_cercanos(juego.laberinto.obtener_elementos_colicionables())
-        self.seguir_jugador()
+        self.muros_cercano = []
+        self.muros_cercano = juego.quad_tree.consulta(pygame.Rect(self.rect.x - TILE * 2,self.rect.y - TILE * 2,self.rect.width + TILE * 4,self.rect.height + TILE * 4))
+        
+        
+        self.seguir_jugador(juego)
+
+
 
 
     def draw(self,superficie,offset):
