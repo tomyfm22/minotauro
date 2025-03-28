@@ -21,8 +21,8 @@ class Jugador(pygame.sprite.Sprite):
         self.delay_inmune = 2 # segundos
         self.direccion_mirando = pygame.math.Vector2(0,0)
 
-        self.inventario = []
-        self.herramienta_actual = 0
+        self.manejo_herramientas = ManenjoHerramientas()
+
 
     def recibir_danio(self):
         if self.inmune:
@@ -94,23 +94,7 @@ class Jugador(pygame.sprite.Sprite):
                 self.inmune = False
 
         teclas = pygame.key.get_just_pressed()
-        if len(self.inventario) > 0 and teclas[pygame.K_SPACE]:
-            self.inventario[self.herramienta_actual].usar(juego)
-            if self.inventario[self.herramienta_actual].usos <= 0:
-                self.inventario.pop(self.herramienta_actual)
-                self.herramienta_actual = 0
-
-
-        if teclas[pygame.K_z]:
-            self.herramienta_actual -= 1
-            if self.herramienta_actual < 0:
-                self.herramienta_actual = len(self.inventario)-1
-            
-
-        if teclas[pygame.K_x]:
-            self.herramienta_actual += 1
-            if self.herramienta_actual == len(self.inventario):
-                self.herramienta_actual = 0
+        self.manejo_herramientas.usar_herramienta(juego,teclas)
             
 
     def draw(self,superficie,offset:tuple[int,int]):

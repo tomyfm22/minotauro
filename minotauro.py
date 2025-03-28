@@ -16,6 +16,8 @@ class Minotauro(pygame.sprite.Sprite):
         self.muros_cercano = []
         self.aturdido = False
         self.delay_aturdido = 5 # segundos
+        self.delay_ataque = 2 # segundos
+        self.ataco = False
 
     def aturdir(self):
         self.aturdido = True
@@ -81,9 +83,11 @@ class Minotauro(pygame.sprite.Sprite):
                         self.rect.y = i[0].colicion.chequear_colicion_y(rect,direccion)
                 return
             else:
-                # Si esta cerca del jugador, este recibe danio.
-                jugador.recibir_danio()
-                juego.camara.sacudir_camara(10,1)
+                if not self.ataco:
+                    # Si esta cerca del jugador, este recibe danio.
+                    jugador.recibir_danio()
+                    juego.camara.sacudir_camara(10,1)
+                    self.ataco = True
 
         
 
@@ -126,6 +130,12 @@ class Minotauro(pygame.sprite.Sprite):
             if self.delay_aturdido < 0:
                 self.aturdido = False
             return
+
+        if self.ataco:
+            self.delay_ataque -= dt
+            if self.delay_ataque <= 0:
+                self.ataco = False
+                self.delay_ataque = 2
 
         
         self.delay_generar_camino -= dt

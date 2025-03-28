@@ -6,6 +6,7 @@ from laberinto import Laberinto
 from camara import Camara
 from minotauro import Minotauro
 from quad_tree import Quadtree
+from manejo_ui import *
 
 
 class Ventana:
@@ -29,34 +30,27 @@ class VentanaJuego(Ventana):
         self.jugador    = Jugador(self.laberinto.punto_aparicion[0] * TILE,self.laberinto.punto_aparicion[0] * TILE)
         self.minotauro  = Minotauro(self.laberinto.punto_aparicion[0] * TILE,self.laberinto.punto_aparicion[0] * TILE)
         self.camara     = Camara(0,0,self.laberinto.tamanio_nivel,self.jugador)
+        self.manejo_gui = pygame_gui.UIManager((ANCHO, ALTO))
         self.elementos_en_pantalla = []
 
         self.gano_juego = False
+        self.manejo_ui = InventoryUI()
+
+
+        # lista de elementos que se actualizan sin importar si estan o no el la pantalla(particulas,efectos,etc)
+        self.elementos_actualizables = []
 
         for tipo in self.laberinto.objetos:
             for elemento in self.laberinto.objetos[tipo]:
                 self.quad_tree.insertar(elemento,tipo)
 
-        self.cantidad_llaves = len(self.laberinto.objetos["llaves"])
 
         self.obtener_elementos_pantalla()
 
-        self.manejo_gui = pygame_gui.UIManager((ANCHO, ALTO))
-        self.texto_llaves = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((ANCHO - 200 - 40,ALTO-30-40), (200, 30)),
-            text='Llaves Recogidas: 0',
-            manager=self.manejo_gui
-        )
-
+    
         self.texto_vida  =  pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((40,ALTO-30-40), (200, 30)),
             text='Vida: 3',
-            manager=self.manejo_gui
-        )
-
-        self.texto_herramienta = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((ANCHO // 2 - 100,ALTO-30-40), (200, 30)),
-            text='Item actual: ',
             manager=self.manejo_gui
         )
 
@@ -69,7 +63,9 @@ class VentanaJuego(Ventana):
 
         # Obtengo los tiles que se encuentran mostrando en la patalla.
         self.elementos_en_pantalla =  self.quad_tree.consulta(pygame.Rect(offset[0]-TILE,offset[1]-TILE,ANCHO + 2 * TILE,ALTO + 2 * TILE))
-                        
+        
+        self.elementos_en_pantalla.sort(key=lambda x: x[0].z_index) # ordeno los elementos por su z_index para dibujarlos en el orden correcto.
+
     def obtener_posicion_jugador_grilla(self):
         return (self.jugador.rect.centerx // TILE,self.jugador.rect.centery // TILE)
 
@@ -90,8 +86,9 @@ class VentanaJuego(Ventana):
 
         self.jugador.manejo_entrada(eventos)
         self.jugador.update(dt,self)
-        self.minotauro.update(dt,self)
+        # self.minotauro.update(dt,self)
         self.camara.update(dt)
+        self.manejo_ui.update(dt)
 
         if self.gano_juego or self.jugador.vida <= 0:
             self.manejo_ventana.cambiar_ventana("fin")
@@ -126,6 +123,7 @@ class VentanaJuego(Ventana):
         superficie.blit(mascara, (0, 0))  # Superponer la máscara
 
         self.manejo_gui.draw_ui(superficie)
+        self.manejo_ui.draw(superficie)
         # for i in self.grafo:
             # pygame.draw.circle(superficie,"yellow",(i[0] * TILE + TILE//2 - offset[0],i[1] * TILE + TILE // 2 - offset[1]),5)
             # for j in self.grafo[i]:
@@ -199,7 +197,7 @@ class MenuPrincipal(Ventana):
         self.fondo.fill("brown")
 
 
-        self.manejo_gui = pygame_gui.ui_manager.UIManager((ANCHO,ALTO))
+        self.manejo_gui = pygame_gui.ui_manager.UIManager((ANCHO,ALTO),"configuracion_ui/menu.json")
         # Crear botones
         self.boton_iniciar = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((ANCHO//2 - 100, 250), (200, 50)),

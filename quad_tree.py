@@ -3,7 +3,7 @@ import pygame
 class Quadtree:
     def __init__(self,level : int,rect : pygame.Rect,padre  = None,raiz = True):
         self.level_max      = 5
-        self.capacidad      = 50 #mmmmm hay que verlo
+        self.capacidad      = 25 #mmmmm hay que verlo
         self.raiz           = raiz
 
         self.level          = level

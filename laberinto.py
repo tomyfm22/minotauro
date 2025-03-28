@@ -7,7 +7,7 @@ class Laberinto:
     ITEMS   = 1
 
     def __init__(self):
-        self.tamanio_mapa = 51
+        self.tamanio_mapa = 21
         self.punto_aparicion = (1,1)
 
         # Guarda las posciones (en coordenadas de grilla) para despues formar el grafo.
@@ -256,15 +256,7 @@ class Laberinto:
                     self.bloques_solidos["colicionables"][pos_vecina] = LIMITE
 
 
-        # Intancio las llaves en distintos puntos del mapa.
-        posiciones_libres = [(i,j) for j in range(self.tamanio_mapa) for i in range(self.tamanio_mapa) if (i,j) not in self.bloques_solidos["colicionables"]]
-        random.shuffle(posiciones_libres)
-        cantidad_llaves = 4
-        while cantidad_llaves > 0:
-            pos = posiciones_libres.pop(0)
-            if abs(pos[0] - centro[0]) + abs(pos[1] - centro[1]) > self.tamanio_mapa // 4:
-                self.bloques_solidos["items"][pos] = LLAVE
-                cantidad_llaves -= 1
+   
 
 
         self.bloques_solidos["items"][centro] = SALIDA
@@ -276,13 +268,10 @@ class Laberinto:
         tipos = [MARTILLO, BOMBAATURDIDORA, BOTIQUIN]
         distribucion = {MARTILLO: 0.5, BOMBAATURDIDORA: 0.3, BOTIQUIN: 0.2}
 
-        items_generados = []
-
         for _ in range(cantidad_items):
             tipo = random.choices(tipos, weights=distribucion.values())[0]
             pos = posiciones_libres.pop(0)
             self.bloques_solidos["items"][pos] = tipo
-            # items_generados.append((tipo, x, y))
 
 
 
@@ -316,10 +305,20 @@ class Laberinto:
                     self.objetos["limite"].add(Muro(posicion[0],posicion[1],self.obtener_sprite_sheet(self.mapeo_sprites[posicion])))
                 elif Id == MURO:
                     self.objetos["muro"].add(Muro(posicion[0],posicion[1],self.obtener_sprite_sheet(self.mapeo_sprites[posicion])))
-                elif Id == LLAVE:
-                    self.objetos["llaves"].add(LLave(posicion[0],posicion[1]))
                 elif Id == PUERTA:
-                    self.objetos["puerta"].add(Puerta(posicion[0],posicion[1]))
+                    puerta = Puerta(posicion[0],posicion[1])
+                    # Intancio las llaves en distintos puntos del mapa.
+                    posiciones_libres = [(i,j) for j in range(self.tamanio_mapa) for i in range(self.tamanio_mapa) if (i,j) not in self.bloques_solidos["colicionables"]]
+                    random.shuffle(posiciones_libres)
+                    cantidad_llaves = puerta.cantidad_de_llaves_necesarias
+                    centro = (self.tamanio_mapa // 2,self.tamanio_mapa // 2)
+                    while cantidad_llaves > 0:
+                        pos = posiciones_libres.pop(0)
+                        if abs(pos[0] - centro[0]) + abs(pos[1] - centro[1]) > self.tamanio_mapa // 4:
+                            self.objetos["llaves"].add(LLave(pos[0],pos[1],puerta))
+                            cantidad_llaves -= 1
+                    self.objetos["puerta"].add(puerta)
+                
                 elif Id == SUELO:
                     self.objetos["suelo"].add(Bloque(posicion[0],posicion[1],self.obtener_sprite_sheet(self.mapeo_sprites[posicion])))
                 elif Id == MARTILLO:
@@ -328,7 +327,7 @@ class Laberinto:
                     self.objetos["items"].add(ItemBotiquin(posicion[0],posicion[1]))
                 elif Id == BOMBAATURDIDORA:
                     self.objetos["items"].add(ItemAturdirMinotauro(posicion[0],posicion[1]))
-                else:
+                elif Id == SALIDA:
                     self.objetos["salida"].add(Salida(posicion[0],posicion[1]))
                 
     def draw(self,superficie:pygame.Surface,offset :tuple[int,int]):

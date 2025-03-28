@@ -11,7 +11,7 @@ class Main:
         self.manejo_ventana = manejo_ventanas.ManejoVentana()
     
     
-    def draw(self):
+    def draw(self): 
         self.window.fill((0,0,0,0))
 
         self.manejo_ventana.draw(self.window)

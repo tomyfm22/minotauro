@@ -1,0 +1,30 @@
+{
+    "fonts": {
+        "default": {
+            "name": "font/Perfect.ttf",
+            "size": 24,
+            "bold": false,
+            "italic": false
+        }
+    },
+    "text": {
+        "default": {
+            "font": "default",
+            "size": 24,
+            "color": "#FFFFFF"
+        },
+        "button_text": {
+            "font": "default",
+            "size": 20,
+            "color": "#000000"
+        }
+    },
+    "button": {
+        "normal_bg": "#CCCCCC",
+        "hovered_bg": "#AAAAAA",
+        "disabled_bg": "#888888",
+        "border_width": 2,
+        "border_color": "#000000",
+        "font": "button_text"
+    }
+}
