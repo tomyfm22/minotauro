@@ -102,3 +102,11 @@ class ItemAturdirMinotauro(Bloque):
         self.z_index = 1
     def update(self, dt, juego):
         self.agarrar_item.interactuar(juego)
+
+class ItemBrujula(Bloque):
+    def __init__(self, x, y):
+        super().__init__(x, y,pygame.image.load("sprites/brujula.png").convert_alpha())
+        self.agarrar_item = AgarrarBrujula(self)
+        self.z_index = 1
+    def update(self, dt, juego):
+        self.agarrar_item.interactuar(juego)

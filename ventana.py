@@ -2,7 +2,7 @@ import pygame,pygame_gui
 import pygame_gui.ui_manager
 from definiciones import *
 from jugador import Jugador
-from laberinto import Laberinto
+from laberinto import *
 from camara import Camara
 from minotauro import Minotauro
 from quad_tree import Quadtree
@@ -38,7 +38,7 @@ class VentanaJuego(Ventana):
 
 
         # lista de elementos que se actualizan sin importar si estan o no el la pantalla(particulas,efectos,etc)
-        self.elementos_actualizables = []
+        self.elementos_actualizables = pygame.sprite.Group()
 
         for tipo in self.laberinto.objetos:
             for elemento in self.laberinto.objetos[tipo]:
@@ -83,7 +83,8 @@ class VentanaJuego(Ventana):
         for i in self.elementos_en_pantalla:
             i[0].update(dt,self)
 
-
+        for i in self.elementos_actualizables:
+            i.update(dt,self)
         self.jugador.manejo_entrada(eventos)
         self.jugador.update(dt,self)
         # self.minotauro.update(dt,self)
@@ -114,10 +115,13 @@ class VentanaJuego(Ventana):
         for i in self.elementos_en_pantalla:
             i[0].draw(superficie,offset)
         
+
         # self.laberinto.rb_visual(superficie)
         self.minotauro.draw(superficie,offset)
         self.jugador.draw(superficie,offset)
         
+        for i in self.elementos_actualizables:
+            i.draw(superficie,offset)
         # Generar la máscara de visión
         mascara = self.generar_mascara_vision(superficie, offset, radio=150)
         superficie.blit(mascara, (0, 0))  # Superponer la máscara
@@ -136,7 +140,7 @@ class FinDelJuego(Ventana):
     def __init__(self, manejo_venanta):
         super().__init__(manejo_venanta)
 
-        self.manejo_gui = pygame_gui.UIManager((ANCHO, ALTO))
+        self.manejo_gui = pygame_gui.UIManager((ANCHO, ALTO),theme_path="configuracion_ui/menu.json")
         self.fondo = pygame.Surface((ANCHO,ALTO))
         self.fondo.fill("brown")
 
@@ -148,14 +152,14 @@ class FinDelJuego(Ventana):
         #     object_id="#titulo"
         # )
 
-        # Botón para volver al menú
+        
+
         self.boton_menu = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((ANCHO//2 - 100, 320), (200, 50)),
             text="Volver al Menú",
             manager=self.manejo_gui
         )
 
-        # Botón para salir
         self.boton_reintentar = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((ANCHO//2 - 100, 250), (200, 50)),
             text="Reintentar",
@@ -194,19 +198,27 @@ class MenuPrincipal(Ventana):
     def __init__(self, manejo_venanta):
         super().__init__(manejo_venanta)
         self.fondo = pygame.Surface((ANCHO,ALTO))
-        self.fondo.fill("brown")
+        self.fondo.fill("black")
+        self.laberinto_animado = LaberintoAnimado()
 
+        self.manejo_gui = pygame_gui.ui_manager.UIManager((ANCHO,ALTO),theme_path="configuracion_ui/menu.json")
+        self.titulo = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect(0,ALTO//4,-1,-1),
+            text = "El Laberinto",
+            manager = self.manejo_gui,
+            object_id="#Titulo",
+            anchors={"centerx":"centerx"}
+        )
 
-        self.manejo_gui = pygame_gui.ui_manager.UIManager((ANCHO,ALTO),"configuracion_ui/menu.json")
         # Crear botones
         self.boton_iniciar = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((ANCHO//2 - 100, 250), (200, 50)),
+            relative_rect=pygame.Rect(ANCHO // 2 - 100,ALTO // 2 + 50 + 5,200,50),
             text="Iniciar Juego",
             manager=self.manejo_gui
         )
 
         self.boton_salir = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((ANCHO//2 - 100, 320), (200, 50)),
+            relative_rect=pygame.Rect(ANCHO // 2 - 100,ALTO // 2 + 100 + 5,200,50),
             text="Salir",
             manager=self.manejo_gui
         )
@@ -231,11 +243,13 @@ class MenuPrincipal(Ventana):
 
 
             self.manejo_gui.process_events(event)
+        self.laberinto_animado.update()
         self.manejo_gui.update(dt)
 
     def draw(self, superficie):
-        self.fondo.fill("brown")
+        self.fondo.fill("black")
         superficie.blit(self.fondo,(0,0))
+        self.laberinto_animado.draw(superficie)
 
         # Dibujar el menú
         self.manejo_gui.draw_ui(superficie)

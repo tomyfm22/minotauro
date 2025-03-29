@@ -3,11 +3,9 @@ from definiciones import *
 from bloque import *
 
 class Laberinto:
-    MURO    = 0
-    ITEMS   = 1
 
     def __init__(self):
-        self.tamanio_mapa = 21
+        self.tamanio_mapa = 101
         self.punto_aparicion = (1,1)
 
         # Guarda las posciones (en coordenadas de grilla) para despues formar el grafo.
@@ -63,6 +61,8 @@ class Laberinto:
 
 
         self.grafo = self.generar_grafo()
+        s = pygame.sprite.Group()
+        
 
     def eliminar_bloque_solido(self,pos_en_grilla):
         if pos_en_grilla in self.bloques_solidos["colicionables"]:
@@ -265,8 +265,8 @@ class Laberinto:
         proporcion = 0.05  # 5% del total de celdas tendrán ítems
         cantidad_items = max(3, int(len(posiciones_libres) * proporcion))  # Mínimo 3 ítems
 
-        tipos = [MARTILLO, BOMBAATURDIDORA, BOTIQUIN]
-        distribucion = {MARTILLO: 0.5, BOMBAATURDIDORA: 0.3, BOTIQUIN: 0.2}
+        tipos = [MARTILLO, BRUJULA, BOTIQUIN]
+        distribucion = {MARTILLO: 0.5, BRUJULA: 0.3, BOTIQUIN: 0.2}
 
         for _ in range(cantidad_items):
             tipo = random.choices(tipos, weights=distribucion.values())[0]
@@ -327,6 +327,8 @@ class Laberinto:
                     self.objetos["items"].add(ItemBotiquin(posicion[0],posicion[1]))
                 elif Id == BOMBAATURDIDORA:
                     self.objetos["items"].add(ItemAturdirMinotauro(posicion[0],posicion[1]))
+                elif Id == BRUJULA:
+                    self.objetos["items"].add(ItemBrujula(posicion[0],posicion[1]))
                 elif Id == SALIDA:
                     self.objetos["salida"].add(Salida(posicion[0],posicion[1]))
                 
@@ -334,3 +336,74 @@ class Laberinto:
         for m in self.bloques_solidos.values():
             m.draw(superficie,offset)
         pygame.draw.rect(superficie,"red",((self.tamanio_mapa//2 * TILE) - offset[0],(self.tamanio_mapa//2 * TILE )- offset[1],TILE,TILE))
+
+
+
+
+
+
+class LaberintoAnimado:
+    def __init__(self):
+        self.ancho = ANCHO
+        self.alto = ALTO
+        self.tile_size = 16
+        self.grid = [[1 for _ in range(ANCHO // self.tile_size)] for _ in range(ALTO // self.tile_size)]
+        self.stack = []
+        self.current = (0, 0)
+        self.visitados = set()
+        self.terminado = False
+        self.surface = pygame.Surface((ANCHO, ALTO))
+        self.colores = {0: (50,50,50), 1: "white"}  # pared, camino
+        self.visitados.add(self.current)
+        self.stack.append(self.current)
+
+    def update(self):
+        if self.terminado:
+            return
+
+        x, y = self.current
+        vecinos = self.obtener_vecinos_validos(x, y)
+
+        if vecinos:
+            nuevo = random.choice(vecinos)
+            self.remover_pared_entre((x, y), nuevo)
+            self.visitados.add(nuevo)
+            self.stack.append(nuevo)
+            self.current = nuevo
+        else:
+            if self.stack:
+                self.current = self.stack.pop()
+            else:
+                self.terminado = True
+
+        self.redibujar_tile(x,y)
+    def obtener_vecinos_validos(self, x, y):
+        vecinos = []
+        direcciones = [(-2, 0), (2, 0), (0, -2), (0, 2)]
+        for dx, dy in direcciones:
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < self.ancho // self.tile_size and 0 <= ny < self.alto // self.tile_size and (nx, ny) not in self.visitados:
+                vecinos.append((nx, ny))
+        return vecinos
+
+    def remover_pared_entre(self, actual, siguiente):
+        ax, ay = actual
+        sx, sy = siguiente
+        mx, my = (ax + sx) // 2, (ay + sy) // 2
+        self.grid[ay][ax] = 0
+        self.grid[sy][sx] = 0
+        self.grid[my][mx] = 0
+        self.redibujar_tile(sx,sy)
+        self.redibujar_tile(mx,my)
+
+    def redibujar_tile(self, x, y):
+        valor = self.grid[y][x]
+        color = self.colores[valor]
+        pygame.draw.rect(
+            self.surface,
+            color,
+            (x * self.tile_size, y * self.tile_size, self.tile_size, self.tile_size)
+        )
+
+    def draw(self, pantalla):
+        pantalla.blit(self.surface, (0, 0))

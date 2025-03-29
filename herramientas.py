@@ -1,5 +1,7 @@
 import pygame
 from definiciones import *
+import math
+
 class Herramientas:
     def __init__(self,jugador,Id):
         self.jugador = jugador
@@ -45,8 +47,57 @@ class AturdirMinotauro(Herramientas):
             self.usos -= 1
             
 
+class Brujula(Herramientas):
+    def __init__(self,jugador):
+        super().__init__(jugador,BRUJULA)
+        self.usos = 1
+    
+    def usar(self,juego):
+        self.usos -= 1
+        elementos = pygame.sprite.Group()
+        for i in juego.laberinto.objetos["llaves"]:
+            elementos.add(i)
+        for i in  juego.laberinto.objetos["puerta"]:
+            elementos.add(i)
+            
+        juego.elementos_actualizables.add(BrujulaVisual(elementos))
+
+class BrujulaVisual(pygame.sprite.Sprite):
+    def __init__(self,objetos_interes):
+        super().__init__()
+        self.delay = 20
+        self.imagen = pygame.image.load("sprites/flecha.png").convert_alpha()
+        self.objetivo = None
+        self.objetos_interes = objetos_interes
+        self.pos_jugador = None
+    def obtener_elemento_cercano(self,jugador):
+        if self.objetos_interes:
+            self.pos_jugador = pygame.math.Vector2(jugador.rect.x,jugador.rect.y)
+            
+            self.objetivo = min(self.objetos_interes, key=lambda objeto: self.pos_jugador.distance_to(pygame.math.Vector2(objeto.rect.x,objeto.rect.y)))
+        else:
+            self.kill()
+
+    def update(self,dt,juego):
+        self.delay -= dt
+        if self.delay < 0:
+            self.kill()
+        jugador = juego.jugador
+        self.obtener_elemento_cercano(jugador)
+        
 
 
+    def draw(self,superficie,offset):
+        if not self.objetivo:
+            return
+        dx = self.objetivo.rect.x - self.pos_jugador[0]
+        dy = self.objetivo.rect.y - self.pos_jugador[1]
+        angulo = math.degrees(math.atan2(dy, dx))
+
+
+        rotada = pygame.transform.rotate(self.imagen, -angulo)
+        rect = rotada.get_rect(center=(self.pos_jugador[0] - offset[0] + TILE // 2,self.pos_jugador[1] - offset[1] + TILE // 2))
+        superficie.blit(rotada, rect)
 
 
 

@@ -21,7 +21,7 @@ class InventoryUI:
             BOTIQUIN : [pygame.image.load("sprites/marco_botiquin.png").convert_alpha(),"botiquin"],
             BOMBAATURDIDORA : [pygame.image.load("sprites/marco_bomba_aturdidora.png").convert_alpha(),"bomba aturdidora"],
             MARTILLO : [pygame.image.load("sprites/marco_martillo.png").convert_alpha(),"martillo"],
-            # BR : pygame_gui.elements.UIImage(pygame.Rect(self.posicion[0] - 20,self.posicion[1]-20,40,40),"sprites/marco.png",self.manage),
+            BRUJULA : [pygame.image.load("sprites/marco_brujula.png").convert_alpha(),"brujula"],
         }
 
         self.delay = 0.5

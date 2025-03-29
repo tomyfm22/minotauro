@@ -1,6 +1,7 @@
 import pygame
 from definiciones import TILE
 import herramientas
+import fx
 class Interactuable:
     def __init__(self,padre):
         self.padre = padre
@@ -40,6 +41,7 @@ class AgarrarMartillo(Interactuable):
     def interactuar(self, juego):
         if juego.jugador.rect.colliderect(self.padre.rect):
             juego.jugador.manejo_herramientas.agregar(herramientas.RomperMuro(juego.jugador))
+            juego.elementos_actualizables.add(fx.Cartel(self.padre.rect.x,self.padre.rect.y,"Martillo"))
             self.padre.kill()
 
 class AgarrarBotiquin(Interactuable):
@@ -48,6 +50,7 @@ class AgarrarBotiquin(Interactuable):
     def interactuar(self, juego):
         if juego.jugador.rect.colliderect(self.padre.rect):
             juego.jugador.manejo_herramientas.agregar(herramientas.Botiquin(juego.jugador))
+            juego.elementos_actualizables.add(fx.Cartel(self.padre.rect.x,self.padre.rect.y,"Botiquin"))
             self.padre.kill()
 
 class AgarrarBombaAturdidora(Interactuable):
@@ -56,4 +59,14 @@ class AgarrarBombaAturdidora(Interactuable):
     def interactuar(self, juego):
         if juego.jugador.rect.colliderect(self.padre.rect):
             juego.jugador.manejo_herramientas.agregar(herramientas.AturdirMinotauro(juego.jugador))
+            juego.elementos_actualizables.add(fx.Cartel(self.padre.rect.x,self.padre.rect.y,"Bomba Aturdidora"))
+            self.padre.kill()
+
+class AgarrarBrujula(Interactuable):
+    def __init__(self, padre):
+        super().__init__(padre)
+    def interactuar(self, juego):
+        if juego.jugador.rect.colliderect(self.padre.rect):
+            juego.jugador.manejo_herramientas.agregar(herramientas.Brujula(juego.jugador))
+            juego.elementos_actualizables.add(fx.Cartel(self.padre.rect.x,self.padre.rect.y,"Brujula"))
             self.padre.kill()
