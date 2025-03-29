@@ -7,7 +7,7 @@ class Laberinto:
     def __init__(self):
         self.tamanio_mapa = 101
         self.punto_aparicion = (1,1)
-
+        self.punto_aparicion_minotauro = (1,1)
         # Guarda las posciones (en coordenadas de grilla) para despues formar el grafo.
         self.bloques_solidos = {
             "colicionables" : {}, # muros, puertas, etc
@@ -262,19 +262,28 @@ class Laberinto:
         self.bloques_solidos["items"][centro] = SALIDA
         posiciones_libres = [(i,j) for j in range(self.tamanio_mapa) for i in range(self.tamanio_mapa) if (i,j) not in self.bloques_solidos["colicionables"]]
         random.shuffle(posiciones_libres)
-        proporcion = 0.05  # 5% del total de celdas tendrán ítems
+        proporcion = 0.01  # 5% del total de celdas tendrán ítems
         cantidad_items = max(3, int(len(posiciones_libres) * proporcion))  # Mínimo 3 ítems
 
-        tipos = [MARTILLO, BRUJULA, BOTIQUIN]
-        distribucion = {MARTILLO: 0.5, BRUJULA: 0.3, BOTIQUIN: 0.2}
+        tipos = [MARTILLO, BOMBAATURDIDORA, BOTIQUIN ,BRUJULA]
+        distribucion = {MARTILLO: 0.5, BOMBAATURDIDORA: 0.3, BOTIQUIN: 0.2 ,BRUJULA : 0.1}
 
         for _ in range(cantidad_items):
             tipo = random.choices(tipos, weights=distribucion.values())[0]
             pos = posiciones_libres.pop(0)
             self.bloques_solidos["items"][pos] = tipo
 
-
-
+        
+        for i in range(self.tamanio_mapa//2 + 5,self.tamanio_mapa//2 + self.tamanio_mapa//2):
+            agrego = False
+            for j in range(self.tamanio_mapa//2 + 5,self.tamanio_mapa//2 + self.tamanio_mapa//2):
+                
+                if (i,j) not in self.bloques_solidos["colicionables"] and random.random() > 0.5:
+                    self.punto_aparicion_minotauro = (i,j)
+                    agrego = True
+                    break
+            if agrego:
+                break
 
         # Aplico el sprite correspondiente a cada muro.
         for i in range(self.tamanio_mapa):
@@ -302,7 +311,7 @@ class Laberinto:
         for tipo in self.bloques_solidos:
             for posicion,Id in self.bloques_solidos[tipo].items():
                 if Id == LIMITE:
-                    self.objetos["limite"].add(Muro(posicion[0],posicion[1],self.obtener_sprite_sheet(self.mapeo_sprites[posicion])))
+                    self.objetos["limite"].add(Limite(posicion[0],posicion[1],self.obtener_sprite_sheet(self.mapeo_sprites[posicion])))
                 elif Id == MURO:
                     self.objetos["muro"].add(Muro(posicion[0],posicion[1],self.obtener_sprite_sheet(self.mapeo_sprites[posicion])))
                 elif Id == PUERTA:

@@ -28,7 +28,7 @@ class VentanaJuego(Ventana):
         self.laberinto  = Laberinto()
         self.quad_tree  = Quadtree(0,pygame.Rect(0,0,self.laberinto.tamanio_nivel[0],self.laberinto.tamanio_nivel[1]))
         self.jugador    = Jugador(self.laberinto.punto_aparicion[0] * TILE,self.laberinto.punto_aparicion[0] * TILE)
-        self.minotauro  = Minotauro(self.laberinto.punto_aparicion[0] * TILE,self.laberinto.punto_aparicion[0] * TILE)
+        self.minotauro  = Minotauro(self.laberinto.punto_aparicion_minotauro[0] * TILE,self.laberinto.punto_aparicion_minotauro[1] * TILE)
         self.camara     = Camara(0,0,self.laberinto.tamanio_nivel,self.jugador)
         self.manejo_gui = pygame_gui.UIManager((ANCHO, ALTO))
         self.elementos_en_pantalla = []
@@ -63,8 +63,7 @@ class VentanaJuego(Ventana):
 
         # Obtengo los tiles que se encuentran mostrando en la patalla.
         self.elementos_en_pantalla =  self.quad_tree.consulta(pygame.Rect(offset[0]-TILE,offset[1]-TILE,ANCHO + 2 * TILE,ALTO + 2 * TILE))
-        
-        self.elementos_en_pantalla.sort(key=lambda x: x[0].z_index) # ordeno los elementos por su z_index para dibujarlos en el orden correcto.
+        self.elementos_en_pantalla.sort(key=lambda x: x.z_index) # ordeno los elementos por su z_index para dibujarlos en el orden correcto.
 
     def obtener_posicion_jugador_grilla(self):
         return (self.jugador.rect.centerx // TILE,self.jugador.rect.centery // TILE)
@@ -81,18 +80,18 @@ class VentanaJuego(Ventana):
         self.obtener_elementos_pantalla()
         self.manejo_gui.update(dt)
         for i in self.elementos_en_pantalla:
-            i[0].update(dt,self)
+            i.update(dt,self)
 
         for i in self.elementos_actualizables:
             i.update(dt,self)
         self.jugador.manejo_entrada(eventos)
         self.jugador.update(dt,self)
-        # self.minotauro.update(dt,self)
+        self.minotauro.update(dt,self)
         self.camara.update(dt)
         self.manejo_ui.update(dt)
 
         if self.gano_juego or self.jugador.vida <= 0:
-            self.manejo_ventana.cambiar_ventana("fin")
+            self.manejo_ventana.cambiar_ventana("menu")
 
     
     def generar_mascara_vision(self,superficie, offset, radio):
@@ -113,7 +112,7 @@ class VentanaJuego(Ventana):
 
 
         for i in self.elementos_en_pantalla:
-            i[0].draw(superficie,offset)
+            i.draw(superficie,offset)
         
 
         # self.laberinto.rb_visual(superficie)

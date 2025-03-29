@@ -12,7 +12,8 @@ class Interactuable:
 class AgarrarLLave(Interactuable):
     def interactuar(self,juego):
         if juego.jugador.rect.colliderect(self.padre.rect):
-            # juego.cantidad_llaves -= 1
+            pygame.mixer.Sound("sonidos/agarrar.wav").play()
+
             self.padre.puerta.cantidad_de_llaves_necesarias -= 1
             self.padre.kill()
 
@@ -33,6 +34,7 @@ class GanarJuego(Interactuable):
         super().__init__(padre)
     def interactuar(self, juego):
         if juego.jugador.rect.colliderect(self.padre.rect):
+            pygame.mixer.Sound("sonidos/agarrar.wav").play()
             juego.gano_juego = True
 
 class AgarrarMartillo(Interactuable):
@@ -40,6 +42,7 @@ class AgarrarMartillo(Interactuable):
         super().__init__(padre)
     def interactuar(self, juego):
         if juego.jugador.rect.colliderect(self.padre.rect):
+            pygame.mixer.Sound("sonidos/agarrar.wav").play()
             juego.jugador.manejo_herramientas.agregar(herramientas.RomperMuro(juego.jugador))
             juego.elementos_actualizables.add(fx.Cartel(self.padre.rect.x,self.padre.rect.y,"Martillo"))
             self.padre.kill()
@@ -49,6 +52,7 @@ class AgarrarBotiquin(Interactuable):
         super().__init__(padre)
     def interactuar(self, juego):
         if juego.jugador.rect.colliderect(self.padre.rect):
+            pygame.mixer.Sound("sonidos/agarrar.wav").play()
             juego.jugador.manejo_herramientas.agregar(herramientas.Botiquin(juego.jugador))
             juego.elementos_actualizables.add(fx.Cartel(self.padre.rect.x,self.padre.rect.y,"Botiquin"))
             self.padre.kill()
@@ -58,6 +62,7 @@ class AgarrarBombaAturdidora(Interactuable):
         super().__init__(padre)
     def interactuar(self, juego):
         if juego.jugador.rect.colliderect(self.padre.rect):
+            pygame.mixer.Sound("sonidos/agarrar.wav").play()
             juego.jugador.manejo_herramientas.agregar(herramientas.AturdirMinotauro(juego.jugador))
             juego.elementos_actualizables.add(fx.Cartel(self.padre.rect.x,self.padre.rect.y,"Bomba Aturdidora"))
             self.padre.kill()
@@ -67,6 +72,7 @@ class AgarrarBrujula(Interactuable):
         super().__init__(padre)
     def interactuar(self, juego):
         if juego.jugador.rect.colliderect(self.padre.rect):
+            pygame.mixer.Sound("sonidos/agarrar.wav").play()
             juego.jugador.manejo_herramientas.agregar(herramientas.Brujula(juego.jugador))
             juego.elementos_actualizables.add(fx.Cartel(self.padre.rect.x,self.padre.rect.y,"Brujula"))
             self.padre.kill()

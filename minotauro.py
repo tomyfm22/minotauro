@@ -53,7 +53,10 @@ class Minotauro(pygame.sprite.Sprite):
         actual = pos_jugador
         while actual:
             camino.append(actual)
-            actual = padre[actual]
+            if actual in padre:
+                actual = padre[actual]
+            else:
+                actual = None
         camino.reverse()
         camino.pop(0) # descarto la posicion en la que ya estoy.
         return camino
@@ -72,21 +75,21 @@ class Minotauro(pygame.sprite.Sprite):
                 self.rect.x += self.velocidad * direccion.x
                 rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
                 for i in self.muros_cercano:
-                    if "colicion" in i[0].__dict__:
-                        self.rect.x = i[0].colicion.chequear_colicion_x(rect,direccion)
+                    if "colicion" in i.__dict__:
+                        self.rect.x = i.colicion.chequear_colicion_x(rect,direccion)
 
 
                 self.rect.y += self.velocidad * direccion.y
                 rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
                 for i in self.muros_cercano:
-                    if "colicion" in i[0].__dict__:
-                        self.rect.y = i[0].colicion.chequear_colicion_y(rect,direccion)
+                    if "colicion" in i.__dict__:
+                        self.rect.y = i.colicion.chequear_colicion_y(rect,direccion)
                 return
             else:
                 if not self.ataco:
                     # Si esta cerca del jugador, este recibe danio.
+                    juego.camara.sacudir_camara(20,5)
                     jugador.recibir_danio()
-                    juego.camara.sacudir_camara(10,1)
                     self.ataco = True
 
         
@@ -112,15 +115,15 @@ class Minotauro(pygame.sprite.Sprite):
             self.rect.x += direccion.x * self.velocidad
             rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
             for i in self.muros_cercano:
-                if "colicion" in i[0].__dict__:
-                    self.rect.x = i[0].colicion.chequear_colicion_x(rect,direccion)
+                if "colicion" in i.__dict__:
+                    self.rect.x = i.colicion.chequear_colicion_x(rect,direccion)
 
 
             self.rect.y += direccion.y * self.velocidad
             rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
             for i in self.muros_cercano:
-                if "colicion" in i[0].__dict__:
-                    self.rect.y = i[0].colicion.chequear_colicion_y(rect,direccion)
+                if "colicion" in i.__dict__:
+                    self.rect.y = i.colicion.chequear_colicion_y(rect,direccion)
 
             
 

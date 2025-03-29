@@ -7,7 +7,7 @@ class Quadtree:
         self.raiz           = raiz
 
         self.level          = level
-        self.objetos:dict[str,pygame.sprite.Group]        = {}
+        self.objetos        = pygame.sprite.Group()
         self.rect           = rect
 
         self.nodos          = [None] * 4
@@ -43,22 +43,20 @@ class Quadtree:
             return False
         
             
-        if tipo not in self.objetos:
-            self.objetos[tipo] = pygame.sprite.Group()
 
-        if len(self.objetos[tipo]) < self.capacidad and self.nodos[0] is None:
-            self.objetos[tipo].add(elemt)
+        if len(self.objetos) < self.capacidad and self.nodos[0] is None:
+            self.objetos.add(elemt)
             return True
        
         if self.nodos[0] is None:
             self.dividir()
        
-        for elemto in self.objetos[tipo]:
+        for elemto in self.objetos:
             for i in self.obtener_indice(elemto.rect,0):
                 if self.nodos[i].insertar(elemto,tipo):
                     break
        
-        self.objetos[tipo].empty()
+        self.objetos.empty()
        
         for i in indice:
             if self.nodos[i].insertar(elemt,tipo):
@@ -124,17 +122,9 @@ class Quadtree:
             for nodo in self.nodos:
                 nodo.consulta(area, tipo, tiles_encontrados)
 
-        if tipo:
-            # tiles_encontrados.update(obj for obj in self.objetos[tipo] if obj.rect.colliderect(area))
-            for i in self.objetos[tipo]:
-                if i.rect.colliderect(area):
-                    tiles_encontrados.add(i)
-        else:
-            for t, objs in self.objetos.items():
-                # tiles_encontrados.update((obj, t) for obj in objs if obj.rect.colliderect(area))
-                for i in objs:
-                    if i.rect.colliderect(area):
-                        tiles_encontrados.add((i,t))
+        for i in self.objetos:
+            if i.rect.colliderect(area):
+                tiles_encontrados.add(i)
 
         return list(tiles_encontrados)
 

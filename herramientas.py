@@ -1,6 +1,7 @@
 import pygame
 from definiciones import *
 import math
+from bloque import Muro
 
 class Herramientas:
     def __init__(self,jugador,Id):
@@ -8,21 +9,38 @@ class Herramientas:
         self.id     = Id
     def usar(self,juego):
         pass
+    def update(self,dt,juego):
+        pass
+    def draw(self,superficie,offset):
+        pass
 
 
 class RomperMuro(Herramientas):
     def __init__(self, jugador):
         super().__init__(jugador,MARTILLO)
+        self.posicion_bloque = (0,0)
         self.usos = 1
     def usar(self, juego):
         
-        posicion_bloque = (self.jugador.rect.centerx // TILE * TILE + self.jugador.direccion_mirando.x * TILE,self.jugador.rect.centery // TILE * TILE + self.jugador.direccion_mirando.y * TILE)
-        bloques = juego.quad_tree.consulta(pygame.rect.Rect(posicion_bloque[0],posicion_bloque[1],TILE,TILE),"muro")
-        if bloques:
-            bloques[0].kill()
-            juego.laberinto.eliminar_bloque_solido((posicion_bloque[0]//TILE,posicion_bloque[1]//TILE))
-            self.usos -= 1
+        self.posicion_bloque = (self.jugador.rect.centerx // TILE * TILE + self.jugador.direccion_mirando.x * TILE,self.jugador.rect.centery // TILE * TILE + self.jugador.direccion_mirando.y * TILE)
+        bloques = juego.quad_tree.consulta(pygame.rect.Rect(self.posicion_bloque[0],self.posicion_bloque[1],TILE,TILE),"muro")
 
+
+        if bloques:
+            bloque = bloques[0]
+
+            if "rompible" in bloque.__dict__:
+                bloque.rompible.romper()
+                self.usos -= 1
+                juego.laberinto.eliminar_bloque_solido((self.posicion_bloque[0]//TILE,self.posicion_bloque[1]//TILE))
+                pygame.mixer.Sound("sonidos/romper.wav").play()
+        pygame.mixer.Sound("sonidos/movimiento_invalido.wav").play()
+          
+    def update(self,dt,juego):
+        self.posicion_bloque = (self.jugador.rect.centerx // TILE * TILE + self.jugador.direccion_mirando.x * TILE,self.jugador.rect.centery // TILE * TILE + self.jugador.direccion_mirando.y * TILE)
+
+    def draw(self,superficie,offset):
+        pygame.draw.rect(superficie,"white",(self.posicion_bloque[0] - offset[0],self.posicion_bloque[1] - offset[1],TILE,TILE),2)
 
 class Botiquin(Herramientas):
     def __init__(self, jugador):
@@ -30,6 +48,7 @@ class Botiquin(Herramientas):
         self.usos = 1
     def usar(self, juego):
         if self.jugador.vida < 3:
+            pygame.mixer.Sound("sonidos/curarse.wav").play()
             self.jugador.vida += 1
             self.usos -= 1
 
@@ -37,15 +56,22 @@ class AturdirMinotauro(Herramientas):
     def __init__(self, jugador):
         super().__init__(jugador,BOMBAATURDIDORA)
         self.usos = 1
+        self.pos_minotauro = (0,0)
+        self.posicion_bloque = (0,0)
+    def update(self,dt,juego):
+        self.posicion_bloque = (self.jugador.rect.centerx // TILE * TILE + self.jugador.direccion_mirando.x * TILE,self.jugador.rect.centery // TILE * TILE + self.jugador.direccion_mirando.y * TILE)
     def usar(self, juego):
-        pos_minotauro = (juego.minotauro.rect.centerx // TILE,juego.minotauro.rect.centery // TILE)
+        self.pos_minotauro = (juego.minotauro.rect.centerx // TILE,juego.minotauro.rect.centery // TILE)
         posicion_jugador_mirando = (self.jugador.rect.centerx // TILE + self.jugador.direccion_mirando.x ,self.jugador.rect.centery // TILE + self.jugador.direccion_mirando.y)
         posicion_jugador = (self.jugador.rect.centerx // TILE,self.jugador.rect.centery // TILE)
-        if pos_minotauro == posicion_jugador or pos_minotauro == posicion_jugador_mirando:
+        if self.pos_minotauro == posicion_jugador or self.pos_minotauro == posicion_jugador_mirando:
             juego.minotauro.aturdir()
+            pygame.mixer.Sound("sonidos/bomba_aturdidora.wav").play()
             juego.camara.sacudir_camara(10,2)
             self.usos -= 1
-            
+        pygame.mixer.Sound("sonidos/movimiento_invalido.wav").play()
+    def draw(self,superficie,offset):
+        pygame.draw.rect(superficie,"white",(self.posicion_bloque[0] - offset[0],self.posicion_bloque[1] - offset[1],TILE,TILE),2)
 
 class Brujula(Herramientas):
     def __init__(self,jugador):
@@ -144,3 +170,10 @@ class ManenjoHerramientas:
         
         # if len(self.herramientas) == 0:
         #     juego.manejo_ui.item = juego.manejo_ui.actualizar_imagen(-1)
+    def update(self,dt,juego):
+        if len(self.herramientas) > 0:
+            self.herramientas[self.indice].update(dt,juego)
+        
+    def draw(self,superficie,offset):
+        if len(self.herramientas) > 0:
+            self.herramientas[self.indice].draw(superficie,offset)

@@ -27,7 +27,7 @@ class Jugador(pygame.sprite.Sprite):
     def recibir_danio(self):
         if self.inmune:
             return
-        
+        pygame.mixer.Sound("sonidos/golpeado.wav").play()
         self.vida -= 1
         self.delay_inmune = 2
         self.inmune = True
@@ -43,16 +43,16 @@ class Jugador(pygame.sprite.Sprite):
         rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
         
         for i in self.muros_cercano:
-            if "colicion" in i[0].__dict__:
-                self.rect.x = i[0].colicion.chequear_colicion_x(rect,self.direccion)
+            if "colicion" in i.__dict__:
+                self.rect.x = i.colicion.chequear_colicion_x(rect,self.direccion)
 
         
         self.rect.y += self.velocidad * direccion_normal.y
         rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
         for i in self.muros_cercano:
 
-            if "colicion" in i[0].__dict__:
-                self.rect.y = i[0].colicion.chequear_colicion_y(rect,self.direccion)
+            if "colicion" in i.__dict__:
+                self.rect.y = i.colicion.chequear_colicion_y(rect,self.direccion)
 
 
 
@@ -95,9 +95,11 @@ class Jugador(pygame.sprite.Sprite):
 
         teclas = pygame.key.get_just_pressed()
         self.manejo_herramientas.usar_herramienta(juego,teclas)
+        self.manejo_herramientas.update(dt,juego)
             
 
     def draw(self,superficie,offset:tuple[int,int]):
         superficie.blit(self.imagen,(self.rect.x - offset[0],self.rect.y - offset[1]))
+        self.manejo_herramientas.draw(superficie,offset)
         # for i in self.muros_cercano:
             # pygame.draw.rect(superficie,"white",(i[0].rect.x - offset[0],i[0].rect.y - offset[1],i[0].rect.width,i[0].rect.width))
