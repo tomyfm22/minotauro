@@ -8,7 +8,7 @@ from minotauro import Minotauro
 from quad_tree import Quadtree
 from manejo_ui import *
 
-
+# Clase vase de una ventana, se va a encargar de actualizar y mostrar las distintas escenas del juego.
 class Ventana:
     def __init__(self,manejo_venanta):
         self.manejo_ventana = manejo_venanta
@@ -20,7 +20,7 @@ class Ventana:
 
 
 
-
+# Clase que se encarga de mostrar el juego, es la ventana principal del juego
 class VentanaJuego(Ventana):
     def __init__(self,manejo_venanta):
         super().__init__(manejo_venanta)
@@ -34,7 +34,8 @@ class VentanaJuego(Ventana):
         self.elementos_en_pantalla = []
 
         self.gano_juego = False
-        self.manejo_ui = InventoryUI()
+        self.inventario_ui = InventarioUI()
+        self.vida_ui        = VidaUI()
 
 
         # lista de elementos que se actualizan sin importar si estan o no el la pantalla(particulas,efectos,etc)
@@ -88,7 +89,7 @@ class VentanaJuego(Ventana):
         self.jugador.update(dt,self)
         self.minotauro.update(dt,self)
         self.camara.update(dt)
-        self.manejo_ui.update(dt)
+        self.inventario_ui.update(dt)
 
         if self.gano_juego or self.jugador.vida <= 0:
             self.manejo_ventana.cambiar_ventana("menu")
@@ -125,8 +126,8 @@ class VentanaJuego(Ventana):
         mascara = self.generar_mascara_vision(superficie, offset, radio=150)
         superficie.blit(mascara, (0, 0))  # Superponer la máscara
 
-        self.manejo_gui.draw_ui(superficie)
-        self.manejo_ui.draw(superficie)
+        self.inventario_ui.draw(superficie)
+        self.vida_ui.draw(superficie)
         # for i in self.grafo:
             # pygame.draw.circle(superficie,"yellow",(i[0] * TILE + TILE//2 - offset[0],i[1] * TILE + TILE // 2 - offset[1]),5)
             # for j in self.grafo[i]:
@@ -192,7 +193,7 @@ class FinDelJuego(Ventana):
         self.manejo_gui.draw_ui(superficie)
 
 
-
+# Clase que se encarga de mostrar el menú principal del juego.
 class MenuPrincipal(Ventana):
     def __init__(self, manejo_venanta):
         super().__init__(manejo_venanta)

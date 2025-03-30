@@ -1,7 +1,8 @@
 import pygame
-from  definiciones import TILE
+from  definiciones import TILE , FPS
 from herramientas import *
 
+# Clase del jugador
 class Jugador(pygame.sprite.Sprite):
     def __init__(self,x,y):
         super().__init__()
@@ -39,7 +40,7 @@ class Jugador(pygame.sprite.Sprite):
 
         self.muros_cercano = []
         self.muros_cercano = bloques
-        self.rect.x += self.velocidad * direccion_normal.x
+        self.rect.x += self.velocidad * direccion_normal.x * dt * FPS
         rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
         
         for i in self.muros_cercano:
@@ -47,7 +48,7 @@ class Jugador(pygame.sprite.Sprite):
                 self.rect.x = i.colicion.chequear_colicion_x(rect,self.direccion)
 
         
-        self.rect.y += self.velocidad * direccion_normal.y
+        self.rect.y += self.velocidad * direccion_normal.y * dt * FPS
         rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
         for i in self.muros_cercano:
 

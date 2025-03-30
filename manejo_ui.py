@@ -2,14 +2,10 @@ import pygame,pygame_gui
 import pygame_gui.ui_manager
 from definiciones import *
 
-class ManejoUi:
-    def __init__(self):
-        self.elementos = {} # elemento:bool si esta en true lo mostramos.
 
+# Clase que se encarga de mostrar la imagen de la herramienta seleccionada por el jugador.
 
-
-
-class InventoryUI:
+class InventarioUI:
     def __init__(self):
         self.posicion = [ANCHO//2,ALTO-40]  # Posición donde se mostrarán los ítems
 
@@ -53,19 +49,15 @@ class InventoryUI:
 
 
 
-
-
-
-class Gui:
-    def __init__(self,x,y,tiempo,imagen):
-        self.x = x
-        self.y = y
-        self.tiempo_inicial = tiempo
-        self.tiempo = tiempo
-        self.imagen = imagen
+class VidaUI:
+    def __init__(self):
+        self.font = pygame.font.Font("configuracion_ui/font/Perfect.ttf", 30)
+        self.texto = self.font.render("Vida: 3", True, (255, 255, 255))
+        self.rect = self.texto.get_rect()
+        self.rect.x = 40
+        self.rect.y = ALTO-40 - self.rect.height
+    def actualizar_texto(self,jugador):
+        self.texto = self.font.render("Vida: " + str(jugador.vida), True, (255, 255, 255))
+        
     def draw(self,superficie):
-        superficie.blit(self.imagen,(self.x,self.y))
-
-
-# class Texto:
-#     def __init__(self,x,y)
+        superficie.blit(self.texto,self.rect)

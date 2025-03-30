@@ -2,10 +2,13 @@ import pygame,random,time
 from definiciones import *
 from bloque import *
 
+
+# Clase que se encarga de generar el laberinto y de instanciar los objetos.
+
 class Laberinto:
 
     def __init__(self):
-        self.tamanio_mapa = 101
+        self.tamanio_mapa = 51
         self.punto_aparicion = (1,1)
         self.punto_aparicion_minotauro = (1,1)
         # Guarda las posciones (en coordenadas de grilla) para despues formar el grafo.
@@ -26,8 +29,7 @@ class Laberinto:
         self.id_sprite = {
             1:0, # muro
             2:1, # piso
-            3:2, # pared izquierda
-            4:3, # pared derecha
+            3:2, # pared
                           } # id : pos_sprite
         
         self.mapeo_sprites = {} # pos:id
@@ -61,9 +63,9 @@ class Laberinto:
 
 
         self.grafo = self.generar_grafo()
-        s = pygame.sprite.Group()
         
 
+    # Cada vez que se quita un bloque solido, se actualiza el grafo.
     def eliminar_bloque_solido(self,pos_en_grilla):
         if pos_en_grilla in self.bloques_solidos["colicionables"]:
             self.bloques_solidos["colicionables"].pop(pos_en_grilla)
@@ -122,7 +124,6 @@ class Laberinto:
         pila    = []
         while no_visitados:
             nodo = actual
-            # self.bloques_solidos.discard(nodo)
             self.bloques_solidos["colicionables"].pop(nodo,None)
             no_visitados.discard(nodo)
 
@@ -258,9 +259,9 @@ class Laberinto:
 
    
 
-
         self.bloques_solidos["items"][centro] = SALIDA
-        posiciones_libres = [(i,j) for j in range(self.tamanio_mapa) for i in range(self.tamanio_mapa) if (i,j) not in self.bloques_solidos["colicionables"]]
+
+        posiciones_libres = [(i,j) for j in range(self.tamanio_mapa) for i in range(self.tamanio_mapa) if ((i,j) not in self.bloques_solidos["colicionables"] and (i,j) != centro)]
         random.shuffle(posiciones_libres)
         proporcion = 0.01  # 5% del total de celdas tendrán ítems
         cantidad_items = max(3, int(len(posiciones_libres) * proporcion))  # Mínimo 3 ítems
@@ -274,6 +275,7 @@ class Laberinto:
             self.bloques_solidos["items"][pos] = tipo
 
         
+        # Busco en que posicion agrego al minotaruo.
         for i in range(self.tamanio_mapa//2 + 5,self.tamanio_mapa//2 + self.tamanio_mapa//2):
             agrego = False
             for j in range(self.tamanio_mapa//2 + 5,self.tamanio_mapa//2 + self.tamanio_mapa//2):
@@ -340,17 +342,12 @@ class Laberinto:
                     self.objetos["items"].add(ItemBrujula(posicion[0],posicion[1]))
                 elif Id == SALIDA:
                     self.objetos["salida"].add(Salida(posicion[0],posicion[1]))
-                
-    def draw(self,superficie:pygame.Surface,offset :tuple[int,int]):
-        for m in self.bloques_solidos.values():
-            m.draw(superficie,offset)
-        pygame.draw.rect(superficie,"red",((self.tamanio_mapa//2 * TILE) - offset[0],(self.tamanio_mapa//2 * TILE )- offset[1],TILE,TILE))
 
 
 
 
 
-
+# Clase simplificada del laberinto que sirve para visualizar la generacion en el menu principal
 class LaberintoAnimado:
     def __init__(self):
         self.ancho = ANCHO

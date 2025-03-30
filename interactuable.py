@@ -2,6 +2,8 @@ import pygame
 from definiciones import TILE
 import herramientas
 import fx
+
+# Componente que hace que un objeto sea interactuable.
 class Interactuable:
     def __init__(self,padre):
         self.padre = padre
@@ -22,13 +24,23 @@ class AbrirPuertas(Interactuable):
         super().__init__(padre)
         # Aumento el area del margen para que el jugador pueda interactuar y que no colicione.
         self.area_interactuable = pygame.Rect(self.padre.rect.x-10,self.padre.rect.y-10,self.padre.rect.width+20,self.padre.rect.height+20)
+        self.delay_mensaje_txt = 5
+        self.delay = -1
+    def update(self,dt,juego):
+        if self.delay > 0:
+            self.delay -= dt
     def interactuar(self, juego):
         if juego.jugador.rect.colliderect(self.area_interactuable):
             if self.padre.cantidad_de_llaves_necesarias < 1:
                 self.padre.kill()
                 juego.laberinto.eliminar_bloque_solido((self.padre.rect.x//TILE,self.padre.rect.y//TILE))
-                # juego.texto_llaves.text = "Llaves Recogidas: " + str(4 - self.padre.cantidad_de_llaves_necesarias)
-
+            self.mostrar_mensaje(juego)
+    def mostrar_mensaje(self,juego):
+        if self.padre.cantidad_de_llaves_necesarias > 0 and self.delay < 0:
+            pygame.mixer.Sound("sonidos/movimiento_invalido.wav").play()
+            juego.elementos_actualizables.add(fx.Cartel(self.padre.rect.x,self.padre.rect.y,f"Quedan {self.padre.cantidad_de_llaves_necesarias} llaves por recojer",3))
+            self.delay = self.delay_mensaje_txt
+        
 class GanarJuego(Interactuable):
     def __init__(self, padre):
         super().__init__(padre)

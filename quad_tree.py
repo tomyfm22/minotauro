@@ -1,5 +1,8 @@
 import pygame
 
+# Estructura espacial que divide el espacio en cuatro partes, para optimizar la busqueda de objetos.
+# Se utiliza para la colision de objetos y la consulta de objetos en un area determinada.
+
 class Quadtree:
     def __init__(self,level : int,rect : pygame.Rect,padre  = None,raiz = True):
         self.level_max      = 5

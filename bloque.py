@@ -5,6 +5,7 @@ from colicionable import Colicionable
 from interactuable import *
 from rompible import Rompible
 
+# Clase base de un bloque del laberinto.
 class Bloque(pygame.sprite.Sprite):
     def __init__(self,x,y,imagen:pygame.Surface):
         super().__init__()
@@ -42,7 +43,6 @@ class Puerta(Bloque):
         super().__init__(x, y, pygame.image.load("sprites/puerta.png").convert_alpha())
 
         self.colicion = Colicionable(self.rect)
-        self.esta_abierta = False
         self.abrir_puerta = AbrirPuertas(self)
 
         self.cantidad_de_llaves_necesarias = 4
@@ -51,10 +51,8 @@ class Puerta(Bloque):
 
     def update(self, dt, juego):
         self.abrir_puerta.interactuar(juego)
+        self.abrir_puerta.update(dt,juego)
         
-        if self.esta_abierta:
-            # juego.gano_juego = True
-            print("GANO")
 
 
 class Salida(Bloque):

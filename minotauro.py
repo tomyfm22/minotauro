@@ -1,6 +1,7 @@
 import pygame
 import heapq
-from definiciones import TILE
+from definiciones import TILE, FPS
+# Clase del minotauro, se encarga de seguir al jugador y de generar un camino hacia el.
 class Minotauro(pygame.sprite.Sprite):
     def __init__(self,x,y):
         super().__init__()
@@ -8,7 +9,7 @@ class Minotauro(pygame.sprite.Sprite):
         self.rect = self.imagen.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.velocidad = 9
+        self.velocidad = 13
 
         self.delay_generar_camino_max = 0.2
         self.delay_generar_camino = 0
@@ -61,7 +62,7 @@ class Minotauro(pygame.sprite.Sprite):
         camino.pop(0) # descarto la posicion en la que ya estoy.
         return camino
 
-    def seguir_jugador(self,juego):
+    def seguir_jugador(self,dt,juego):
         tamanio = 50
         jugador = juego.jugador
         # Si me encuentro en el mismo tile que el jugador, los sigo 
@@ -72,14 +73,14 @@ class Minotauro(pygame.sprite.Sprite):
             if direccion.length() > 20:
                 direccion = direccion.normalize()
 
-                self.rect.x += self.velocidad * direccion.x
+                self.rect.x += self.velocidad * direccion.x * dt * FPS
                 rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
                 for i in self.muros_cercano:
                     if "colicion" in i.__dict__:
                         self.rect.x = i.colicion.chequear_colicion_x(rect,direccion)
 
 
-                self.rect.y += self.velocidad * direccion.y
+                self.rect.y += self.velocidad * direccion.y * dt * FPS
                 rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
                 for i in self.muros_cercano:
                     if "colicion" in i.__dict__:
@@ -90,6 +91,7 @@ class Minotauro(pygame.sprite.Sprite):
                     # Si esta cerca del jugador, este recibe danio.
                     juego.camara.sacudir_camara(20,5)
                     jugador.recibir_danio()
+                    juego.vida_ui.actualizar_texto(juego.jugador)
                     self.ataco = True
 
         
@@ -105,21 +107,21 @@ class Minotauro(pygame.sprite.Sprite):
         direccion = pygame.math.Vector2(nodo[0] - self.rect.centerx, nodo[1] - self.rect.centery)
         distancia_total = direccion.length()
 
-        if distancia_total < TILE // 2:  # Distancia mínima para eliminar el nodo
+        if distancia_total < TILE // 4:  # Distancia mínima para eliminar el nodo
             self.camino.pop(0)
         else:
 
 
             direccion = direccion.normalize()
 
-            self.rect.x += direccion.x * self.velocidad
+            self.rect.x += direccion.x * self.velocidad * dt * FPS
             rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
             for i in self.muros_cercano:
                 if "colicion" in i.__dict__:
                     self.rect.x = i.colicion.chequear_colicion_x(rect,direccion)
 
 
-            self.rect.y += direccion.y * self.velocidad
+            self.rect.y += direccion.y * self.velocidad * dt * FPS
             rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
             for i in self.muros_cercano:
                 if "colicion" in i.__dict__:
@@ -149,7 +151,7 @@ class Minotauro(pygame.sprite.Sprite):
         self.muros_cercano = juego.quad_tree.consulta(pygame.Rect(self.rect.x - TILE * 2,self.rect.y - TILE * 2,self.rect.width + TILE * 4,self.rect.height + TILE * 4))
         
         
-        self.seguir_jugador(juego)
+        self.seguir_jugador(dt,juego)
 
 
 

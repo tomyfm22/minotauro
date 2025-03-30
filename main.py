@@ -3,7 +3,7 @@ import definiciones
 import manejo_ventanas
 pygame.init()
 
- 
+# Punto de entrada del juego.
 class Main:
     def __init__(self):
         self.window = pygame.display.set_mode((definiciones.ANCHO,definiciones.ALTO))
@@ -27,7 +27,6 @@ class Main:
 
             pygame.display.flip()
             dt = self.clock.tick(definiciones.FPS)
-            # pygame.display.set_caption(str(1 / dt * 1000))
 
 
 main = Main()
