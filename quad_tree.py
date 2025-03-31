@@ -40,7 +40,7 @@ class Quadtree:
 
 
 
-    def insertar(self,elemt,tipo = "colicion"):
+    def insertar(self,elemt):
         indice = self.obtener_indice(elemt.rect,0)
         if not indice:
             return False
@@ -56,13 +56,13 @@ class Quadtree:
        
         for elemto in self.objetos:
             for i in self.obtener_indice(elemto.rect,0):
-                if self.nodos[i].insertar(elemto,tipo):
+                if self.nodos[i].insertar(elemto):
                     break
        
         self.objetos.empty()
        
         for i in indice:
-            if self.nodos[i].insertar(elemt,tipo):
+            if self.nodos[i].insertar(elemt):
                 return True
        
         return False    
@@ -114,7 +114,7 @@ class Quadtree:
 
 
 
-    def consulta(self, area: pygame.Rect, tipo=None, tiles_encontrados=None) -> list:
+    def consulta(self, area: pygame.Rect, tiles_encontrados=None) -> list:
         if tiles_encontrados is None:
             tiles_encontrados = set()
 
@@ -123,7 +123,7 @@ class Quadtree:
 
         if self.nodos[0] is not None:
             for nodo in self.nodos:
-                nodo.consulta(area, tipo, tiles_encontrados)
+                nodo.consulta(area, tiles_encontrados)
 
         for i in self.objetos:
             if i.rect.colliderect(area):

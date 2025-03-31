@@ -43,7 +43,7 @@ class VentanaJuego(Ventana):
 
         for tipo in self.laberinto.objetos:
             for elemento in self.laberinto.objetos[tipo]:
-                self.quad_tree.insertar(elemento,tipo)
+                self.quad_tree.insertar(elemento)
 
 
         self.obtener_elementos_pantalla()

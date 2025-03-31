@@ -9,7 +9,7 @@ class Minotauro(pygame.sprite.Sprite):
         self.rect = self.imagen.get_rect()
         self.rect.x = x
         self.rect.y = y
-        self.velocidad = 13
+        self.velocidad = 10
 
         self.delay_generar_camino_max = 0.2
         self.delay_generar_camino = 0
@@ -62,8 +62,22 @@ class Minotauro(pygame.sprite.Sprite):
         camino.pop(0) # descarto la posicion en la que ya estoy.
         return camino
 
+    def mover_minotauro(self,dt,direccion):
+        
+        self.rect.x += self.velocidad * direccion.x * dt * FPS
+        rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
+        for i in self.muros_cercano:
+            if "colicion" in i.__dict__:
+                self.rect.x = i.colicion.chequear_colicion_x(rect,direccion)
+
+
+        self.rect.y += self.velocidad * direccion.y * dt * FPS
+        rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
+        for i in self.muros_cercano:
+            if "colicion" in i.__dict__:
+                self.rect.y = i.colicion.chequear_colicion_y(rect,direccion)
+
     def seguir_jugador(self,dt,juego):
-        tamanio = 50
         jugador = juego.jugador
         # Si me encuentro en el mismo tile que el jugador, los sigo 
         pos_jugador_grilla = (jugador.rect.centerx // TILE,jugador.rect.centery // TILE)
@@ -71,20 +85,7 @@ class Minotauro(pygame.sprite.Sprite):
 
             direccion = pygame.math.Vector2(jugador.rect.centerx - self.rect.centerx ,jugador.rect.centery - self.rect.centery)
             if direccion.length() > 20:
-                direccion = direccion.normalize()
-
-                self.rect.x += self.velocidad * direccion.x * dt * FPS
-                rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
-                for i in self.muros_cercano:
-                    if "colicion" in i.__dict__:
-                        self.rect.x = i.colicion.chequear_colicion_x(rect,direccion)
-
-
-                self.rect.y += self.velocidad * direccion.y * dt * FPS
-                rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
-                for i in self.muros_cercano:
-                    if "colicion" in i.__dict__:
-                        self.rect.y = i.colicion.chequear_colicion_y(rect,direccion)
+                self.mover_minotauro(dt,direccion.normalize())
                 return
             else:
                 if not self.ataco:
@@ -111,21 +112,8 @@ class Minotauro(pygame.sprite.Sprite):
             self.camino.pop(0)
         else:
 
-
-            direccion = direccion.normalize()
-
-            self.rect.x += direccion.x * self.velocidad * dt * FPS
-            rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
-            for i in self.muros_cercano:
-                if "colicion" in i.__dict__:
-                    self.rect.x = i.colicion.chequear_colicion_x(rect,direccion)
-
-
-            self.rect.y += direccion.y * self.velocidad * dt * FPS
-            rect = pygame.Rect(self.rect.x,self.rect.y,self.rect.width,self.rect.height)
-            for i in self.muros_cercano:
-                if "colicion" in i.__dict__:
-                    self.rect.y = i.colicion.chequear_colicion_y(rect,direccion)
+            self.mover_minotauro(dt,direccion.normalize())
+          
 
             
 

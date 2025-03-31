@@ -26,12 +26,12 @@ class RomperMuro(Herramientas):
     def usar(self, juego):
         
         self.posicion_bloque = (self.jugador.rect.centerx // TILE * TILE + self.jugador.direccion_mirando.x * TILE,self.jugador.rect.centery // TILE * TILE + self.jugador.direccion_mirando.y * TILE)
-        bloques = juego.quad_tree.consulta(pygame.rect.Rect(self.posicion_bloque[0],self.posicion_bloque[1],TILE,TILE),"muro")
+        bloques = juego.quad_tree.consulta(pygame.rect.Rect(self.posicion_bloque[0],self.posicion_bloque[1],TILE,TILE))
 
 
         if bloques:
             bloque = bloques[0]
-
+            # Verifico si el bloque tiene un componente que lo hace rompible.
             if "rompible" in bloque.__dict__:
                 bloque.rompible.romper()
                 self.usos -= 1
@@ -101,6 +101,11 @@ class BrujulaVisual(pygame.sprite.Sprite):
         self.objetivo = None
         self.objetos_interes = objetos_interes
         self.pos_jugador = None
+
+        self.mostrar_imagen = True
+        self.frecuencia_max = 0.5
+        self.frecuencia = 0.5
+
     def obtener_elemento_cercano(self,jugador):
         if self.objetos_interes:
             self.pos_jugador = pygame.math.Vector2(jugador.rect.x,jugador.rect.y)
@@ -111,6 +116,19 @@ class BrujulaVisual(pygame.sprite.Sprite):
 
     def update(self,dt,juego):
         self.delay -= dt
+
+        if self.delay < 5:
+            # Empieza a parpadear la imagen cada vez mas rapido.
+            self.frecuencia -= dt
+            if self.frecuencia < 0:
+                self.mostrar_imagen = not self.mostrar_imagen
+                self.frecuencia = self.frecuencia_max
+            self.frecuencia_max = max(0.1,self.frecuencia_max - 0.1 * dt)
+
+            
+
+
+
         if self.delay < 0:
             self.kill()
         jugador = juego.jugador
@@ -119,7 +137,7 @@ class BrujulaVisual(pygame.sprite.Sprite):
 
 
     def draw(self,superficie,offset):
-        if not self.objetivo:
+        if not self.objetivo or not self.mostrar_imagen:
             return
         dx = self.objetivo.rect.x - self.pos_jugador[0]
         dy = self.objetivo.rect.y - self.pos_jugador[1]

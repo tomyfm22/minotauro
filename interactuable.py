@@ -14,6 +14,7 @@ class Interactuable:
 class AgarrarLLave(Interactuable):
     def interactuar(self,juego):
         if juego.jugador.rect.colliderect(self.padre.rect):
+            juego.elementos_actualizables.add(fx.Cartel(self.padre.rect.x,self.padre.rect.y,"Llave recogida"))
             pygame.mixer.Sound("sonidos/agarrar.wav").play()
 
             self.padre.puerta.cantidad_de_llaves_necesarias -= 1
@@ -34,6 +35,7 @@ class AbrirPuertas(Interactuable):
             if self.padre.cantidad_de_llaves_necesarias < 1:
                 self.padre.kill()
                 juego.laberinto.eliminar_bloque_solido((self.padre.rect.x//TILE,self.padre.rect.y//TILE))
+                pygame.mixer.Sound("sonidos/romper.wav").play()
             self.mostrar_mensaje(juego)
     def mostrar_mensaje(self,juego):
         if self.padre.cantidad_de_llaves_necesarias > 0 and self.delay < 0:

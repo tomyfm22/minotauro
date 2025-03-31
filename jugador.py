@@ -14,7 +14,7 @@ class Jugador(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-        self.velocidad = 20
+        self.velocidad = 15
         self.direccion = pygame.math.Vector2(0,0)
         self.muros_cercano = []
         self.vida  = 3
