@@ -14,9 +14,13 @@ El laberinto es un juego 2D Top-Down de exploración y supervivencia en un laber
 A lo largo del laberinto encontrarás diferentes herramientas para ayudarte a sobrevivir:
 
 - **Bomba Aturdidora**: Genera una explosión que aturde al Minotauro por unos segundos, dándote tiempo para escapar.
+- ![](sprites/bomba_aturdidora.png)
 - **Martillo**: Rompe los muros dándote la posibilidad de abrirte camino.
+- ![](sprites/rompe_muros.png)
 - **Botiquín**: Recuperas un punto de vida.
+- ![](sprites/botiquin.png)
 - **Brújula**: Te guía hacia la puerta o llave más cercana.
+- ![](sprites/brujula.png)
 
 ## 📜 Instalación y Ejecución
 
