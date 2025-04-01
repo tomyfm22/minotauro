@@ -9,6 +9,9 @@ El laberinto es un juego 2D Top-Down de exploración y supervivencia en un laber
 - Usa herramientas estratégicamente para ganar tiempo y llegar a la salida.
 - Una vez que tengas todas las llaves, dirígete a la puerta para escapar y ganar la partida.
 
+## Controles
+- flechitas para moverte, z y x para cambiar de ítem y barra para usar el ítem.
+
 ## 🔧 Herramientas Disponibles
 
 A lo largo del laberinto encontrarás diferentes herramientas para ayudarte a sobrevivir:
@@ -40,7 +43,7 @@ Si tienes ideas para mejorar el juego o quieres contribuir con código, ¡eres b
 
 ## 📜 Licencia
 
-Este proyecto está bajo la licencia MIT. Puedes modificarlo y distribuirlo libremente.
+Este proyecto está bajo la licencia MIT.
 
 ---
 ¡Prepárate para la aventura y escapa del Minotauro antes de que sea demasiado tarde! 🏃‍♂️🔥
